@@ -1,0 +1,41 @@
+# 支持的模型列表
+models:
+  # OpenAI
+  gpt-4o:
+    provider: openai
+    model: gpt-4o
+    api_key: @secret:openai-api-key        # 使用安全存储
+    base_url: https://api.openai.com/v1
+
+  # 阿里云 Qwen
+  qwen-plus:
+    provider: qwen
+    model: qwen-plus
+    access_key_id: @secret:qwen-access-key-id
+    access_key_secret: @secret:qwen-access-key-secret
+
+  # 智谱 AI
+  glm-4:
+    provider: zhipu
+    model: glm-4
+    api_key: @secret:zhipu-api-key
+
+  # Kimi
+  kimi-v1:
+    provider: moonshot
+    model: moonshot-v1-32k
+    api_key: @secret:kimi-api-key
+
+  # 讯飞星火
+  spark-v3:
+    provider: spark
+    model: generalv3
+    app_id: @secret:spark-app-id
+    api_key: @secret:spark-api-key
+    api_secret: @secret:spark-api-secret
+
+# 默认模型
+default_model: qwen-plus
+
+# 是否启用日志
+debug: false

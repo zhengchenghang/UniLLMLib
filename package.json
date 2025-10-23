@@ -1,0 +1,54 @@
+{
+  "name": "unillm-ts",
+  "version": "1.0.0",
+  "description": "Unified TypeScript library for multiple LLM providers (OpenAI, Qwen, ZhiPu, Moonshot, Spark)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example:basic": "ts-node examples/basic.ts",
+    "example:multi": "ts-node examples/multi-model.ts",
+    "example:conversation": "ts-node examples/conversation.ts",
+    "setup:keys": "ts-node examples/setup-keys.ts"
+  },
+  "keywords": [
+    "llm",
+    "openai",
+    "qwen",
+    "zhipu",
+    "moonshot",
+    "kimi",
+    "spark",
+    "chatgpt",
+    "ai",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "keytar": "^7.9.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0",
+    "undici-types": "^6.0.0"
+  },
+  "files": [
+    "dist",
+    "src/config/llm_config.yaml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+
