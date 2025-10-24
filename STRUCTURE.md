@@ -8,8 +8,9 @@ UniLLM-TS-Lib/
 │   ├── types.ts                  # TypeScript 类型定义
 │   ├── secrets.ts                # 安全存储模块（keytar）
 │   ├── config/                   # 配置相关
-│   │   ├── loader.ts            # 配置文件加载器
-│   │   └── llm_config.yaml      # 默认配置文件
+│   │   ├── loader.ts            # 模型/模板/实例的加载与持久化
+│   │   ├── models.json          # 支持模型定义（静态）
+│   │   └── templates.json       # 配置模板定义（静态）
 │   └── providers/               # LLM 提供商实现
 │       ├── base.ts              # 抽象基类
 │       ├── openai.ts            # OpenAI 实现
@@ -61,12 +62,13 @@ UniLLM-TS-Lib/
 
 ### src/types.ts
 - 所有 TypeScript 接口定义：
-  - `ModelConfig`: 模型配置
-  - `Message`: 消息格式
-  - `ChatCompletionOptions`: 对话选项
-  - `ChatCompletionResponse`: 响应格式
-  - `LLMConfig`: 配置文件格式
-  - `ModelInfo`: 模型信息
+  - `ModelConfig`: Provider 调用时使用的配置
+  - `SupportedModel` / `ModelInfo`: 模型描述信息
+  - `ConfigTemplate` / `TemplateSecretField`: 模板定义
+  - `ConfigInstance` / `ConfigInstanceSummary`: 配置实例结构
+  - `InstanceCreationOptions` / `InstanceUpdatePayload`: 实例管理输入
+  - `Message` / `MessageContent`: 消息与内容表示
+  - `ChatCompletionOptions` / `ChatCompletionResponse`: 对话输入输出
 
 ### src/secrets.ts
 - 安全存储管理
@@ -75,10 +77,9 @@ UniLLM-TS-Lib/
 - `resolveValue` 函数解析配置中的 `@secret:` 引用
 
 ### src/config/loader.ts
-- 配置文件加载器
-- 支持 YAML 格式
-- 验证配置有效性
-- 默认使用 `llm_config.yaml`
+- 负责加载静态的模型与模板 JSON
+- 在用户目录 `~/.unillm` 中读写实例与状态 JSON
+- 提供 `loadSupportedModels`、`loadTemplates`、`loadInstances`、`saveInstances`、`loadState`、`saveState` 等工具函数
 
 ### src/providers/base.ts
 - `LLMProvider` 抽象基类
@@ -175,13 +176,12 @@ npm publish
 ## 依赖关系
 
 ### 运行时依赖
-- `js-yaml`: YAML 配置文件解析
-- `keytar`: 系统密钥链集成（可选）
+- `keytar`: 系统密钥链集成（可选，可按需安装）
 
 ### 开发依赖
 - `typescript`: TypeScript 编译器
 - `@types/node`: Node.js 类型定义
-- `@types/js-yaml`: js-yaml 类型定义
+- `ts-node`: 示例运行工具
 
 ## 配置文件
 

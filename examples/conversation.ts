@@ -6,7 +6,15 @@ async function main() {
   console.log('=== 多轮对话示例 ===\n');
 
   await llmManager.init();
-  llmManager.selectModel('qwen-plus');
+
+  const instances = llmManager.listInstances();
+  const qwenInstance = instances.find(inst => inst.templateId === 'qwen') ?? instances[0];
+  if (!qwenInstance) {
+    throw new Error('未找到可用的配置实例');
+  }
+
+  await llmManager.setCurrentInstance(qwenInstance.id);
+  await llmManager.setCurrentModel('qwen-plus');
 
   // 维护对话历史
   const conversationHistory: Message[] = [
@@ -78,7 +86,7 @@ async function main() {
 }
 
 function isAsyncGenerator(obj: any): obj is AsyncGenerator<string> {
-  return obj && typeof obj.next === 'function';
+  return obj && typeof obj.next === 'function' && typeof obj[Symbol.asyncIterator] === 'function';
 }
 
 main().catch(console.error);
