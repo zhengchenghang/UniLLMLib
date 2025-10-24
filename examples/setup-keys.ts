@@ -13,26 +13,28 @@ async function setupKeys() {
   console.log('=== UniLLM-TS API Key 设置工具 ===\n');
 
   try {
-    // OpenAI
-    // await setSecret('openai-api-key', 'sk-your-openai-key-here');
+    // OpenAI 默认实例
+    // await setSecret('openai-default-api_key', 'sk-your-openai-key-here');
     // console.log('✓ OpenAI API Key 已设置');
 
-    // 通义千问
-    // await setSecret('qwen-api-key', 'your-qwen-api-key-here');
-    // console.log('✓ Qwen API Key 已设置');
+    // 通义千问默认实例（根据模板需要，可以额外设置 access key）
+    // await setSecret('qwen-default-api_key', 'your-qwen-api-key-here');
+    // await setSecret('qwen-default-access_key_id', 'your-aliyun-ak');
+    // await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
+    // console.log('✓ Qwen 凭证已设置');
 
-    // 智谱 AI
-    // await setSecret('zhipu-api-key', 'your-zhipu-api-key-here');
+    // 智谱 AI 默认实例
+    // await setSecret('zhipu-default-api_key', 'your-zhipu-api-key-here');
     // console.log('✓ ZhiPu API Key 已设置');
 
-    // Moonshot Kimi
-    // await setSecret('kimi-api-key', 'your-kimi-api-key-here');
+    // Moonshot Kimi 默认实例
+    // await setSecret('moonshot-default-api_key', 'your-kimi-api-key-here');
     // console.log('✓ Kimi API Key 已设置');
 
-    // 讯飞星火
-    // await setSecret('spark-app-id', 'your-app-id');
-    // await setSecret('spark-api-key', 'your-api-key');
-    // await setSecret('spark-api-secret', 'your-api-secret');
+    // 讯飞星火默认实例
+    // await setSecret('spark-default-app_id', 'your-app-id');
+    // await setSecret('spark-default-api_key', 'your-api-key');
+    // await setSecret('spark-default-api_secret', 'your-api-secret');
     // console.log('✓ Spark API Keys 已设置');
 
     console.log('\n提示: 请取消注释并填入你的实际 API Key');

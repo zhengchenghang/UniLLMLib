@@ -13,7 +13,7 @@
 - 🔌 **可扩展**：支持文本对话，后续可扩展其他数据格式
 - 🔒 **安全存储**：支持加密存储 API Key（使用 keytar）
 - 📦 **易集成**：作为 npm 包，一行代码引入
-- ⚙️ **配置管理**：通过配置文件管理 API Key、模型、超参等
+- ⚙️ **配置管理**：通过模板与实例管理 API Key、模型、超参等
 
 ## 支持的提供商
 
@@ -46,36 +46,35 @@ npm install unillm-ts
 import { setSecret } from 'unillm-ts';
 
 // 存储 API Keys
-await setSecret('openai-api-key', 'your-openai-key');
-await setSecret('qwen-api-key', 'your-qwen-key');
-await setSecret('zhipu-api-key', 'your-zhipu-key');
+await setSecret('openai-default-api_key', 'your-openai-key');
+await setSecret('qwen-default-api_key', 'your-qwen-key');
+await setSecret('zhipu-default-api_key', 'your-zhipu-key');
+// 根据模板需求，部分提供商还需要额外字段，例如：
+// await setSecret('qwen-default-access_key_id', 'your-aliyun-ak');
+// await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
 ```
 
-### 2. 创建配置文件
+### 2. 查看模板与实例
 
-创建 `llm_config.yaml` 文件（或使用默认配置）：
+UniLLM-TS 内置所有支持的模型、配置模板以及基于模板生成的默认实例。初始化后可以查看并管理这些实例：
 
-```yaml
-models:
-  gpt-4:
-    provider: openai
-    model: gpt-4
-    api_key: @secret:openai-api-key
-    base_url: https://api.openai.com/v1
+```typescript
+import llmManager from 'unillm-ts';
 
-  qwen-plus:
-    provider: qwen
-    model: qwen-plus
-    api_key: @secret:qwen-api-key
+await llmManager.init();
 
-  glm-4:
-    provider: zhipu
-    model: glm-4
-    api_key: @secret:zhipu-api-key
+const templates = llmManager.getConfigTemplates();
+const instances = llmManager.listInstances();
 
-default_model: qwen-plus
-debug: false
+console.log('Templates:', templates.map(t => ({ id: t.id, models: t.modelIds })));
+console.log('Instances:', instances.map(inst => ({
+  id: inst.id,
+  template: inst.templateId,
+  secretKeys: inst.secretKeys,
+})));
 ```
+
+每个实例都会给出需要配置的 `secretKeys`（例如 `qwen-default-api_key`）。使用 `setSecret` 写入真实值后即可调用对应提供方。
 
 ### 3. 使用单例模式（推荐）
 
@@ -85,12 +84,18 @@ import llmManager from 'unillm-ts';
 // 初始化
 await llmManager.init();
 
+// 选择实例与模型
+const instances = llmManager.listInstances();
+const current = instances.find(inst => inst.templateId === 'qwen') ?? instances[0];
+if (!current) {
+  throw new Error('未找到可用的配置实例');
+}
+await llmManager.setCurrentInstance(current.id);
+await llmManager.setCurrentModel('qwen-plus');
+
 // 查询支持的模型列表
 const models = llmManager.listModels();
 console.log('Available models:', models);
-
-// 选择模型
-llmManager.selectModel('qwen-plus');
 
 // 简单对话（非流式）
 const response = await llmManager.chatSimple('你好，请介绍一下自己');
@@ -109,7 +114,15 @@ for await (const chunk of stream) {
 import { LLMManager } from 'unillm-ts';
 
 const manager = new LLMManager();
-await manager.init('./my-config.yaml');
+await manager.init();
+
+const instances = manager.listInstances();
+const openaiInstance = instances.find(inst => inst.templateId === 'openai');
+if (!openaiInstance) {
+  throw new Error('未找到 OpenAI 配置实例');
+}
+await manager.setCurrentInstance(openaiInstance.id);
+await manager.setCurrentModel('gpt-4o');
 
 // 高级对话接口
 const response = await manager.chat({
@@ -120,80 +133,64 @@ const response = await manager.chat({
   temperature: 0.7,
   max_tokens: 1000,
   stream: false
-}, 'gpt-4');
+});
 
-if (!isStream(response)) {
-  console.log(response.content);
-  console.log('Usage:', response.usage);
+if (!('content' in response)) {
+  throw new Error('Unexpected stream response');
 }
+
+console.log(response.content);
+console.log('Usage:', response.usage);
 ```
 
 ## API 文档
 
 ### LLMManager
 
-#### `init(configPath?: string): Promise<void>`
+#### `init(): Promise<void>`
 
-初始化管理器，加载配置文件。
+初始化管理器，加载内置模型与模板，并从本地 JSON 中读取配置实例。
 
-#### `listModels(): string[]`
-
-获取所有配置的模型名称列表。
-
-#### `getModelsInfo(): ModelInfo[]`
-
-获取模型详细信息列表。
+#### 模型信息
+- `listModels(): string[]`
+- `getModelsInfo(): ModelInfo[]`
+- `getSupportedModels(): SupportedModel[]`
+- `getCurrentInstanceModels(): SupportedModel[]`
 
 ```typescript
 interface ModelInfo {
+  id: string;
   name: string;
   provider: string;
   model: string;
+  description?: string;
+  parameters: Record<string, any>;
+  dataFormats: {
+    input: string[];
+    output: string[];
+  };
 }
 ```
 
-#### `selectModel(modelName: string): void`
+#### 模板与实例管理
+- `getConfigTemplates(): ConfigTemplate[]`
+- `createInstanceFromTemplate(templateId: string, options?: InstanceCreationOptions): Promise<ConfigInstanceSummary>`
+- `listInstances(): ConfigInstanceSummary[]`
+- `getInstance(instanceId: string): ConfigInstanceSummary | null`
+- `updateInstance(instanceId: string, payload: InstanceUpdatePayload): Promise<ConfigInstanceSummary>`
+- `setCurrentInstance(instanceId: string): Promise<void>`
+- `getCurrentInstance(): ConfigInstanceSummary | null`
+- `setCurrentModel(modelId: string): Promise<void>`
+- `getCurrentModel(): string | null`
+- `getModelConfig(modelId: string, instanceId?: string): Partial<ModelConfig> | null`
 
-选择当前使用的模型。
+#### 对话接口
+- `chat(options: ChatCompletionOptions, selector?: string | { instanceId?: string; modelId?: string }): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
+- `chatSimple(message: string, selector?: string | { instanceId?: string; modelId?: string }): Promise<string>`
+- `chatStream(message: string, selector?: string | { instanceId?: string; modelId?: string }): AsyncGenerator<string>`
 
-#### `getCurrentModel(): string | null`
-
-获取当前选择的模型名称。
-
-#### `getModelConfig(modelName: string): Partial<ModelConfig> | null`
-
-获取指定模型的配置（敏感信息已脱敏）。
-
-#### `chat(options: ChatCompletionOptions, modelName?: string): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
-
-统一的对话接口。
-
-```typescript
-interface ChatCompletionOptions {
-  messages: Message[];
-  temperature?: number;
-  max_tokens?: number;
-  stream?: boolean;
-  top_p?: number;
-}
-
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string | MessageContent[];
-}
-```
-
-#### `chatSimple(message: string, modelName?: string): Promise<string>`
-
-简化的非流式对话接口。
-
-#### `chatStream(message: string, modelName?: string): AsyncGenerator<string>`
-
-简化的流式对话接口。
-
-#### `getSupportedProviders(): string[]`
-
-获取支持的提供商列表。
+#### 其他
+- `getSupportedProviders(): string[]`
 
 ### 安全存储
 
@@ -205,21 +202,14 @@ interface Message {
 
 获取存储的敏感信息。
 
-## 配置文件说明
+## 配置数据说明
 
-配置文件使用 YAML 格式，支持以下字段：
+- 模型信息：保存在 `src/config/models.json`，提供模型 ID、参数、数据格式等描述。
+- 模板信息：保存在 `src/config/templates.json`，定义每个提供方的默认配置与所需密钥。
+- 配置实例：运行时保存在用户目录 `~/.unillm/instances.json`，每个实例包含名称、配置覆盖项与 `secretKeys`。
+- 当前状态：当前实例与模型保存在 `~/.unillm/state.json`，便于下次启动时恢复。
 
-```yaml
-models:
-  model-name:
-    provider: openai  # 提供商名称
-    model: gpt-4      # 模型名称
-    api_key: @secret:key-name  # 使用 @secret: 前缀引用安全存储的密钥
-    # 其他提供商特定的配置...
-
-default_model: model-name  # 默认使用的模型
-debug: false  # 是否启用调试模式
-```
+> 提示：模板仅由开发者提供，构建后无法通过运行时修改模板文件。若需要新增或调整模板，请在发布前更新对应 JSON。
 
 ## 扩展性
 

@@ -34,21 +34,21 @@ UniLLM-TS 是一个统一的 TypeScript LLM 调用库，旨在为开发者提供
    - API Key 脱敏显示
 
 5. **配置管理**
-   - YAML 格式配置文件
-   - 灵活的配置选项
-   - 默认模型设置
-   - 支持自定义配置路径
+   - 模型与模板静态 JSON 定义
+   - 通过模板创建可自定义的配置实例
+   - 默认实例 + 当前状态持久化到 `~/.unillm`
+   - 支持在运行时更新实例和密钥
 
 ### ✅ 类型系统
 
 完整的 TypeScript 类型定义：
-- `ModelConfig` - 模型配置
-- `Message` - 消息格式
-- `ChatCompletionOptions` - 对话选项
-- `ChatCompletionResponse` - 响应格式
-- `LLMConfig` - 配置文件格式
-- `ModelInfo` - 模型信息
-- `MessageContent` - 多模态内容（可扩展）
+- `ModelConfig` - Provider 调用配置
+- `SupportedModel` / `ModelInfo` - 模型描述信息
+- `ConfigTemplate` / `TemplateSecretField` - 模板定义
+- `ConfigInstance` / `ConfigInstanceSummary` - 配置实例数据结构
+- `InstanceCreationOptions` / `InstanceUpdatePayload` - 实例管理输入
+- `Message` / `MessageContent` - 消息格式
+- `ChatCompletionOptions` / `ChatCompletionResponse` - 对话输入输出
 
 ### ✅ 文档
 
@@ -93,7 +93,7 @@ UniLLM-TS 是一个统一的 TypeScript LLM 调用库，旨在为开发者提供
 - 无 UI 依赖
 - 不依赖外部服务
 - 最小化依赖包
-- 仅 2 个运行时依赖（js-yaml, keytar）
+- 运行时仅依赖 `keytar`（可选）
 
 ### 统一接口
 - 所有提供商使用相同的调用方式
@@ -127,16 +127,17 @@ UniLLM-TS 是一个统一的 TypeScript LLM 调用库，旨在为开发者提供
 ```typescript
 import llmManager from 'unillm-ts';
 
-// 初始化
 await llmManager.init();
 
-// 查询模型
-const models = llmManager.listModels();
+const instances = llmManager.listInstances();
+const qwenInstance = instances.find(inst => inst.templateId === 'qwen');
+if (!qwenInstance) {
+  throw new Error('未找到 Qwen 实例');
+}
 
-// 选择模型
-llmManager.selectModel('qwen-plus');
+await llmManager.setCurrentInstance(qwenInstance.id);
+await llmManager.setCurrentModel('qwen-plus');
 
-// 对话
 const response = await llmManager.chatSimple('你好');
 console.log(response);
 ```
@@ -147,9 +148,16 @@ console.log(response);
 import { LLMManager } from 'unillm-ts';
 
 const manager = new LLMManager();
-await manager.init('./custom-config.yaml');
+await manager.init();
 
-// 多轮对话
+const instances = manager.listInstances();
+const openai = instances.find(inst => inst.templateId === 'openai');
+if (!openai) {
+  throw new Error('未找到 OpenAI 实例');
+}
+await manager.setCurrentInstance(openai.id);
+await manager.setCurrentModel('gpt-4o');
+
 const response = await manager.chat({
   messages: [
     { role: 'system', content: '你是一个专业助手' },
@@ -194,11 +202,16 @@ UniLLM-TS-Lib/
 | 方法 | 功能 | 状态 |
 |------|------|------|
 | `init()` | 初始化管理器 | ✅ |
-| `listModels()` | 获取模型列表 | ✅ |
-| `getModelsInfo()` | 获取模型详细信息 | ✅ |
-| `selectModel()` | 选择模型 | ✅ |
+| `getConfigTemplates()` | 获取模板列表 | ✅ |
+| `createInstanceFromTemplate()` | 创建配置实例 | ✅ |
+| `listInstances()` | 列出实例 | ✅ |
+| `setCurrentInstance()` | 设置当前实例 | ✅ |
+| `getCurrentInstance()` | 获取当前实例 | ✅ |
+| `setCurrentModel()` | 设置当前模型 | ✅ |
 | `getCurrentModel()` | 获取当前模型 | ✅ |
-| `getModelConfig()` | 获取模型配置 | ✅ |
+| `listModels()` | 获取模型 ID 列表 | ✅ |
+| `getModelsInfo()` | 获取模型详细信息 | ✅ |
+| `getModelConfig()` | 获取实例化配置 | ✅ |
 | `chat()` | 统一对话接口 | ✅ |
 | `chatSimple()` | 简化对话 | ✅ |
 | `chatStream()` | 流式对话 | ✅ |
@@ -275,13 +288,12 @@ npm run build
 ## 依赖清单
 
 ### 运行时依赖
-- `js-yaml`: ^4.1.0 - YAML 解析
-- `keytar`: ^7.9.0 - 系统密钥链
+- `keytar`: ^7.9.0 - 系统密钥链（可选）
 
 ### 开发依赖
 - `typescript`: ^5.0.0 - TypeScript 编译器
 - `@types/node`: ^20.0.0 - Node.js 类型
-- `@types/js-yaml`: ^4.0.9 - js-yaml 类型
+- `ts-node`: ^10.9.0 - 示例运行工具
 
 ## 许可证
 

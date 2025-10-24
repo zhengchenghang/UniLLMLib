@@ -2,150 +2,238 @@
 
 ## 类: LLMManager
 
-主要的管理器类，用于管理和调用不同的 LLM 提供商。
+`LLMManager` 是库的核心管理类，负责加载内置模型与模板、管理运行时配置实例，并统一对接各个 LLM 提供商的聊天接口。
 
-### 方法
+### 初始化
 
-#### `init(configPath?: string): Promise<void>`
+#### `init(): Promise<void>`
 
-初始化 LLM Manager。
+初始化管理器，加载内置模型与模板，并从本地数据目录（默认 `~/.unillm`）读取配置实例和当前状态。如果本地没有实例文件，会根据模板自动生成默认实例。
 
-**参数:**
-- `configPath` (可选): 配置文件路径，默认使用内置的 `llm_config.yaml`
-
-**返回:** Promise<void>
-
-**示例:**
 ```typescript
 const manager = new LLMManager();
-await manager.init('./my-config.yaml');
+await manager.init();
 ```
 
----
+> 说明：初始化过程是幂等的；重复调用不会重新写入文件。
+
+### 模型信息
 
 #### `listModels(): string[]`
-
-获取所有配置的模型名称列表。
-
-**返回:** string[] - 模型名称数组
-
-**示例:**
-```typescript
-const models = manager.listModels();
-// ['gpt-4', 'qwen-plus', 'glm-4', ...]
-```
-
----
+返回所有支持的模型 ID 列表。
 
 #### `getModelsInfo(): ModelInfo[]`
+返回全部模型的详细信息。
 
-获取模型详细信息列表。
+#### `getSupportedModels(): SupportedModel[]`
+与 `getModelsInfo` 等价，提供完整模型描述。
 
-**返回:** ModelInfo[] - 包含模型详细信息的数组
+#### `getCurrentInstanceModels(): SupportedModel[]`
+返回当前选中实例可用的模型列表。
 
-**ModelInfo 接口:**
 ```typescript
-interface ModelInfo {
-  name: string;      // 模型名称
-  provider: string;  // 提供商
-  model: string;     // 模型 ID
+const models = manager.getModelsInfo();
+models.forEach(model => {
+  console.log(model.id, model.parameters.maxInputTokens);
+});
+```
+
+`ModelInfo`/`SupportedModel` 结构：
+
+```typescript
+interface SupportedModel {
+  id: string;
+  name: string;
+  provider: string;
+  model: string;
+  description?: string;
+  parameters: Record<string, any>;
+  dataFormats: {
+    input: string[];
+    output: string[];
+  };
 }
 ```
 
-**示例:**
-```typescript
-const info = manager.getModelsInfo();
-// [
-//   { name: 'gpt-4', provider: 'openai', model: 'gpt-4' },
-//   { name: 'qwen-plus', provider: 'qwen', model: 'qwen-plus' },
-//   ...
-// ]
-```
+### 模板与实例管理
 
----
+#### `getConfigTemplates(): ConfigTemplate[]`
+读取内置模板列表（只读）。
 
-#### `selectModel(modelName: string): void`
+#### `createInstanceFromTemplate(templateId: string, options?: InstanceCreationOptions): Promise<ConfigInstanceSummary>`
+基于模板创建新的配置实例，可自定义名称、配置覆盖和预设模型。
 
-选择当前使用的模型。
+#### `listInstances(): ConfigInstanceSummary[]`
+列出全部实例（密钥字段会以 `[secure]` 形式呈现）。
 
-**参数:**
-- `modelName`: 模型名称
+#### `getInstance(instanceId: string): ConfigInstanceSummary | null`
+获取单个实例信息。
 
-**抛出:** Error - 如果模型不存在
+#### `updateInstance(instanceId: string, payload: InstanceUpdatePayload): Promise<ConfigInstanceSummary>`
+更新实例的名称、配置覆盖、密钥值或默认模型。
 
-**示例:**
-```typescript
-manager.selectModel('gpt-4');
-```
+#### `setCurrentInstance(instanceId: string): Promise<void>`
+设置当前使用的实例，并自动同步默认模型。
 
----
+#### `getCurrentInstance(): ConfigInstanceSummary | null`
+返回当前实例（脱敏）。
+
+#### `setCurrentModel(modelId: string): Promise<void>`
+设置当前实例下次调用时使用的模型。`selectModel` 是其兼容别名。
 
 #### `getCurrentModel(): string | null`
+返回当前实例选择的模型 ID。
 
-获取当前选择的模型名称。
+#### `getModelConfig(modelId: string, instanceId?: string): Partial<ModelConfig> | null`
+返回指定模型在实例中的配置快照（密钥字段脱敏）。
 
-**返回:** string | null - 当前模型名称，未选择则返回 null
+示例：
 
-**示例:**
 ```typescript
-const current = manager.getCurrentModel();
-// 'gpt-4'
+await manager.init();
+
+const templates = manager.getConfigTemplates();
+const instances = manager.listInstances();
+
+const qwenInstance = instances.find(inst => inst.templateId === 'qwen');
+if (!qwenInstance) {
+  throw new Error('没有可用的 Qwen 实例');
+}
+
+await manager.setCurrentInstance(qwenInstance.id);
+await manager.setCurrentModel('qwen-plus');
+
+const preview = manager.getModelConfig('qwen-plus');
+console.log(preview);
 ```
+
+常用类型：
+
+```typescript
+interface ConfigTemplate {
+  id: string;
+  name: string;
+  provider: string;
+  description?: string;
+  modelIds: string[];
+  defaultConfig: Record<string, any>;
+  secretFields: TemplateSecretField[];
+  defaultInstance?: TemplateDefaultInstance;
+}
+
+interface TemplateSecretField {
+  key: string;
+  label?: string;
+  description?: string;
+  required?: boolean;
+}
+
+interface ConfigInstanceSummary {
+  id: string;
+  templateId: string;
+  name: string;
+  config: Record<string, any>;
+  secretKeys: Record<string, string>;
+  selectedModelId?: string;
+  createdAt: string;
+  updatedAt: string;
+  isDefault?: boolean;
+}
+
+interface InstanceCreationOptions {
+  name?: string;
+  config?: Record<string, any>;
+  secrets?: Record<string, string>;
+  selectedModelId?: string;
+}
+
+interface InstanceUpdatePayload {
+  name?: string;
+  config?: Record<string, any>;
+  secrets?: Record<string, string | null>;
+  selectedModelId?: string;
+}
+```
+
+### 对话接口
+
+#### `chat(options: ChatCompletionOptions, selector?: string | { instanceId?: string; modelId?: string }): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
+统一对话接口。`selector` 参数可以指定模型 ID 或包含实例/模型的选择对象；省略时使用当前实例与模型。
+
+#### `chatSimple(message: string, selector?: string | { instanceId?: string; modelId?: string }): Promise<string>`
+非流式快捷方法。
+
+#### `chatStream(message: string, selector?: string | { instanceId?: string; modelId?: string }): AsyncGenerator<string>`
+流式快捷方法。
+
+```typescript
+await manager.setCurrentInstance('openai-default');
+await manager.setCurrentModel('gpt-4o');
+
+const answer = await manager.chatSimple('你好！');
+console.log(answer);
+
+const stream = await manager.chatStream('写一首诗');
+for await (const chunk of stream) {
+  process.stdout.write(chunk);
+}
+```
+
+`ChatCompletionOptions` 与 `ChatCompletionResponse` 类型见 `src/types.ts`。
+
+### 其他方法
+
+#### `getSupportedProviders(): string[]`
+返回已实现的提供商列表，如 `['openai', 'qwen', ...]`。
 
 ---
 
-#### `getModelConfig(modelName: string): Partial<ModelConfig> | null`
+## 安全存储函数
 
-获取指定模型的配置（敏感信息已脱敏）。
+### `setSecret(key: string, value: string): Promise<void>`
+将敏感信息写入系统密钥链。密钥名称通常来源于实例的 `secretKeys`。
 
-**参数:**
-- `modelName`: 模型名称
+### `getSecret(key: string): Promise<string | null>`
+读取密钥值。
 
-**返回:** Partial<ModelConfig> | null - 模型配置，不存在则返回 null
+### `deleteSecret(key: string): Promise<boolean>`
+删除密钥。
 
-**示例:**
-```typescript
-const config = manager.getModelConfig('gpt-4');
-// {
-//   provider: 'openai',
-//   model: 'gpt-4',
-//   api_key: '[secure]',
-//   base_url: 'https://api.openai.com/v1'
-// }
-```
+### `getAllSecrets(): Promise<string[]>`
+列出当前服务下保存的所有密钥名称。
+
+> 秘钥存储由 `keytar` 提供，具体行为取决于运行平台。
 
 ---
 
-#### `chat(options: ChatCompletionOptions, modelName?: string): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
+## 常用类型
 
-统一的对话接口，支持流式和非流式响应。
+更多类型定义见 `src/types.ts`，以下为核心接口摘要：
 
-**参数:**
-- `options`: 对话选项
-- `modelName` (可选): 模型名称，不提供则使用当前选择的模型
-
-**返回:** 
-- 非流式: Promise<ChatCompletionResponse>
-- 流式: Promise<AsyncGenerator<string>>
-
-**ChatCompletionOptions 接口:**
 ```typescript
+interface ModelConfig {
+  provider: string;
+  model: string;
+  api_key?: string;
+  base_url?: string;
+  access_key_id?: string;
+  access_key_secret?: string;
+  app_id?: string;
+  api_secret?: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+  [key: string]: any;
+}
+
 interface ChatCompletionOptions {
   messages: Message[];
-  temperature?: number;  // 0-2，默认1
-  max_tokens?: number;   // 最大生成 token 数
-  stream?: boolean;      // 是否流式返回
-  top_p?: number;        // 核采样参数
+  temperature?: number;
+  max_tokens?: number;
+  stream?: boolean;
+  top_p?: number;
+  [key: string]: any;
 }
 
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string | MessageContent[];
-}
-```
-
-**ChatCompletionResponse 接口:**
-```typescript
 interface ChatCompletionResponse {
   content: string;
   role: 'assistant';
@@ -158,232 +246,52 @@ interface ChatCompletionResponse {
 }
 ```
 
-**示例:**
-```typescript
-// 非流式
-const response = await manager.chat({
-  messages: [
-    { role: 'user', content: '你好' }
-  ],
-  temperature: 0.7,
-  stream: false
-});
-console.log(response.content);
-
-// 流式
-const stream = await manager.chat({
-  messages: [
-    { role: 'user', content: '写一首诗' }
-  ],
-  stream: true
-});
-
-for await (const chunk of stream) {
-  process.stdout.write(chunk);
-}
-```
-
 ---
 
-#### `chatSimple(message: string, modelName?: string): Promise<string>`
+## 配置数据与目录
 
-简化的非流式对话接口。
+- **静态定义**：
+  - `src/config/models.json` —— 模型信息（不可在运行时修改）
+  - `src/config/templates.json` —— 模板定义（不可在运行时修改）
+- **运行时数据**（默认存放在 `~/.unillm`）：
+  - `instances.json` —— 实例列表
+  - `state.json` —— 当前实例与模型状态
 
-**参数:**
-- `message`: 用户消息
-- `modelName` (可选): 模型名称
-
-**返回:** Promise<string> - AI 回复内容
-
-**示例:**
-```typescript
-const reply = await manager.chatSimple('什么是递归？');
-console.log(reply);
-```
-
----
-
-#### `chatStream(message: string, modelName?: string): Promise<AsyncGenerator<string>>`
-
-简化的流式对话接口。
-
-**参数:**
-- `message`: 用户消息
-- `modelName` (可选): 模型名称
-
-**返回:** Promise<AsyncGenerator<string>> - 流式响应生成器
-
-**示例:**
-```typescript
-const stream = await manager.chatStream('写一首诗');
-for await (const chunk of stream) {
-  process.stdout.write(chunk);
-}
-```
-
----
-
-#### `getSupportedProviders(): string[]`
-
-获取支持的提供商列表。
-
-**返回:** string[] - 提供商名称数组
-
-**示例:**
-```typescript
-const providers = manager.getSupportedProviders();
-// ['openai', 'qwen', 'zhipu', 'moonshot', 'spark']
-```
-
----
-
-## 安全存储函数
-
-### `setSecret(key: string, value: string): Promise<void>`
-
-存储敏感信息到系统密钥链。
-
-**参数:**
-- `key`: 密钥名称
-- `value`: 密钥值
-
-**示例:**
-```typescript
-import { setSecret } from 'unillm-ts';
-await setSecret('openai-api-key', 'sk-...');
-```
-
----
-
-### `getSecret(key: string): Promise<string | null>`
-
-从系统密钥链获取敏感信息。
-
-**参数:**
-- `key`: 密钥名称
-
-**返回:** Promise<string | null> - 密钥值，不存在则返回 null
-
-**示例:**
-```typescript
-import { getSecret } from 'unillm-ts';
-const key = await getSecret('openai-api-key');
-```
-
----
-
-## 类型定义
-
-### ModelConfig
-
-```typescript
-interface ModelConfig {
-  provider: string;        // 提供商名称
-  model: string;          // 模型 ID
-  api_key?: string;       // API Key
-  base_url?: string;      // API 基础 URL
-  access_key_id?: string; // 阿里云 Access Key ID
-  access_key_secret?: string; // 阿里云 Access Key Secret
-  app_id?: string;        // 讯飞 App ID
-  api_secret?: string;    // 讯飞 API Secret
-  [key: string]: any;     // 其他自定义字段
-}
-```
-
-### Message
-
-```typescript
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string | MessageContent[];
-}
-```
-
-### MessageContent (扩展性支持)
-
-```typescript
-interface MessageContent {
-  type: 'text' | 'image_url' | 'file';
-  text?: string;
-  image_url?: string;
-  file_url?: string;
-}
-```
-
-### LLMConfig
-
-```typescript
-interface LLMConfig {
-  models: Record<string, ModelConfig>;
-  default_model?: string;
-  debug?: boolean;
-}
-```
-
----
-
-## 配置文件格式
-
-### YAML 配置示例
-
-```yaml
-models:
-  gpt-4:
-    provider: openai
-    model: gpt-4
-    api_key: @secret:openai-api-key  # 引用安全存储
-    base_url: https://api.openai.com/v1
-
-  qwen-plus:
-    provider: qwen
-    model: qwen-plus
-    api_key: @secret:qwen-api-key
-
-default_model: gpt-4
-debug: false
-```
-
-### 配置字段说明
-
-- `models`: 模型配置对象
-  - 键名: 自定义的模型名称
-  - `provider`: 提供商 (openai, qwen, zhipu, moonshot, spark)
-  - `model`: 提供商的模型 ID
-  - 其他字段根据提供商要求配置
-
-- `default_model`: 默认模型名称
-- `debug`: 是否启用调试模式
-
-### 使用 @secret: 语法
-
-在配置文件中，使用 `@secret:key-name` 语法引用存储在系统密钥链中的敏感信息：
-
-```yaml
-api_key: @secret:openai-api-key
-```
-
-这将在运行时自动从密钥链读取名为 `openai-api-key` 的值。
+模板只能在开发阶段修改；运行时只能通过实例和密钥进行定制。
 
 ---
 
 ## 错误处理
 
-所有异步方法都可能抛出错误，建议使用 try-catch 处理：
+建议为涉及网络或密钥的调用编写 `try/catch`：
 
 ```typescript
 try {
   await manager.init();
-  const response = await manager.chatSimple('Hello');
-  console.log(response);
+  await manager.setCurrentInstance('openai-default');
+  await manager.setCurrentModel('gpt-4o');
+  const reply = await manager.chatSimple('Hello');
+  console.log(reply);
 } catch (error) {
-  console.error('Error:', error.message);
+  console.error('调用失败:', (error as Error).message);
 }
 ```
 
 常见错误：
-- `Model not found` - 模型不存在
-- `LLMManager not initialized` - 未调用 init()
-- `No model selected` - 未选择模型
-- `keytar is not available` - keytar 未安装
-- API 相关错误 - 来自具体提供商的错误
+- `LLMManager not initialized` —— 忘记调用 `init()`
+- `Configuration instance ... not found` —— 实例不存在
+- `Model ... is not available for instance ...` —— 模型与实例不匹配
+- Provider 相关错误 —— 来自具体服务端
+- `keytar` 相关错误 —— 当前环境不支持安全存储
 
+---
+
+## 附：密钥命名约定
+
+默认实例的密钥名称格式为 `<实例ID>-<字段名>`，例如：
+- `openai-default-api_key`
+- `qwen-default-api_key`
+- `qwen-default-access_key_id`
+- `spark-default-api_secret`
+
+自定义实例将使用生成的实例 ID（如 `openai-<uuid>-api_key`）。通过 `ConfigInstanceSummary.secretKeys` 可随时查询对应名称。

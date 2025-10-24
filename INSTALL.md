@@ -45,23 +45,15 @@ sudo pacman -S libsecret
 
 如果您的环境不支持 keytar，可以：
 
-1. **使用环境变量**：直接在配置文件中使用环境变量
-```yaml
-models:
-  gpt-4:
-    provider: openai
-    model: gpt-4
-    api_key: ${OPENAI_API_KEY}  # 从环境变量读取
-```
+1. **使用环境变量初始化密钥**：
+   ```typescript
+   import { setSecret } from 'unillm-ts';
 
-2. **使用明文配置**（不推荐用于生产环境）
-```yaml
-models:
-  gpt-4:
-    provider: openai
-    model: gpt-4
-    api_key: sk-your-api-key-here
-```
+   await setSecret('openai-default-api_key', process.env.OPENAI_API_KEY ?? '');
+   ```
+2. **自定义密钥管理**：扩展或替换 `src/secrets.ts`，将密钥读写重定向到环境变量、文件或云密钥服务。
+
+> 注意：请避免在代码仓库中保存明文密钥。
 
 ## 验证安装
 

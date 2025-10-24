@@ -1,0 +1,92 @@
+[
+  {
+    "id": "gpt-4o",
+    "name": "GPT-4o",
+    "provider": "openai",
+    "model": "gpt-4o",
+    "description": "OpenAI flagship GPT-4o model with multimodal understanding and streaming support.",
+    "parameters": {
+      "maxInputTokens": 128000,
+      "maxOutputTokens": 4096,
+      "supportsStreaming": true,
+      "temperatureRange": [0, 2],
+      "defaultTemperature": 0.7
+    },
+    "dataFormats": {
+      "input": ["text", "image"],
+      "output": ["text"]
+    }
+  },
+  {
+    "id": "qwen-plus",
+    "name": "Qwen Plus",
+    "provider": "qwen",
+    "model": "qwen-plus",
+    "description": "Aliyun DashScope Qwen-Plus chat model suitable for general purpose dialogue with streaming support.",
+    "parameters": {
+      "maxInputTokens": 6000,
+      "maxOutputTokens": 4000,
+      "supportsStreaming": true,
+      "temperatureRange": [0, 1.5],
+      "defaultTemperature": 0.7
+    },
+    "dataFormats": {
+      "input": ["text"],
+      "output": ["text"]
+    }
+  },
+  {
+    "id": "glm-4",
+    "name": "GLM-4",
+    "provider": "zhipu",
+    "model": "glm-4",
+    "description": "ZhiPu AI GLM-4 conversational model supporting Chinese and English with long-context handling.",
+    "parameters": {
+      "maxInputTokens": 32000,
+      "maxOutputTokens": 4096,
+      "supportsStreaming": true,
+      "temperatureRange": [0, 1.5],
+      "defaultTemperature": 0.7
+    },
+    "dataFormats": {
+      "input": ["text"],
+      "output": ["text"]
+    }
+  },
+  {
+    "id": "moonshot-v1-32k",
+    "name": "Moonshot v1 32k",
+    "provider": "moonshot",
+    "model": "moonshot-v1-32k",
+    "description": "Moonshot AI high context window model suitable for Kimi assistants.",
+    "parameters": {
+      "maxInputTokens": 32000,
+      "maxOutputTokens": 4096,
+      "supportsStreaming": true,
+      "temperatureRange": [0, 1.5],
+      "defaultTemperature": 0.7
+    },
+    "dataFormats": {
+      "input": ["text"],
+      "output": ["text"]
+    }
+  },
+  {
+    "id": "spark-v3",
+    "name": "Spark General v3",
+    "provider": "spark",
+    "model": "generalv3",
+    "description": "iFLYTEK Spark large language model v3 for Chinese conversation via WebSocket API.",
+    "parameters": {
+      "maxInputTokens": 8192,
+      "maxOutputTokens": 2048,
+      "supportsStreaming": true,
+      "temperatureRange": [0, 1.5],
+      "defaultTemperature": 0.5
+    },
+    "dataFormats": {
+      "input": ["text"],
+      "output": ["text"]
+    }
+  }
+]
