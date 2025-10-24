@@ -6,8 +6,19 @@ export class QwenProvider extends LLMProvider {
   async chatCompletion(
     options: ChatCompletionOptions
   ): Promise<ChatCompletionResponse | AsyncGenerator<string>> {
-    const { api_key, model } = this.config;
+    const { api_key, model, base_url } = this.config;
 
+    // 参数校验
+    if (!api_key) throw new Error('Missing Qwen API key');
+    if (!model) throw new Error('Missing model name');
+    if (!options.messages?.length) throw new Error('Messages are required');
+
+    const temperature = options.temperature ?? 0.7;
+    const max_tokens = options.max_tokens ?? 1024;
+    const stream = options.stream ?? false;
+
+    const url = base_url || 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+    
     const headers = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${api_key}`,
@@ -19,21 +30,27 @@ export class QwenProvider extends LLMProvider {
         messages: options.messages,
       },
       parameters: {
-        temperature: options.temperature,
-        max_tokens: options.max_tokens,
-        stream: options.stream || false,
+        temperature: temperature,
+        max_tokens: max_tokens,
+        stream: stream || false,
       },
     };
 
-    const response = await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation', {
+    const response = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Qwen API error: ${response.status} - ${error}`);
+      let errorMsg = '';
+      try {
+        const errData = await response.json();
+        errorMsg = errData.message || errData.error?.message || JSON.stringify(errData);
+      } catch {
+        errorMsg = await response.text();
+      }
+      throw new Error(`Qwen API error: ${response.status} ${response.statusText} - ${errorMsg}`);
     }
 
     if (options.stream) {
@@ -44,7 +61,11 @@ export class QwenProvider extends LLMProvider {
         content: data.output.text,
         role: 'assistant',
         finish_reason: data.output.finish_reason,
-        usage: data.usage,
+        usage: {
+          prompt_tokens: data.usage?.input_tokens ?? 0,
+          completion_tokens: data.usage?.output_tokens ?? 0,
+          total_tokens: (data.usage?.input_tokens ?? 0) + (data.usage?.output_tokens ?? 0),
+        },
       };
     }
   }
@@ -52,33 +73,50 @@ export class QwenProvider extends LLMProvider {
   private async *handleStream(response: Response): AsyncGenerator<string> {
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
+    let buffer = ''; // 缓存未处理完的数据
+  
+    if (!reader) throw new Error('No response body');
 
-    if (!reader) {
-      throw new Error('No response body');
-    }
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n').filter(line => line.trim() !== '');
-
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          const data = line.slice(5).trim() as string;
-          
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.output?.text;
-            if (content) {
-              yield content;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+  
+        buffer += decoder.decode(value, { stream: true });
+  
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // 保留最后一行未完整部分
+  
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const dataStr = line.slice(5).trim();
+            if (dataStr === '[DONE]') return; // 流结束
+            if (!dataStr) continue;
+  
+            try {
+              const parsed = JSON.parse(dataStr);
+              const content = parsed.output?.choices?.[0]?.delta?.content ||
+                             parsed.output?.text ||
+                             '';
+              if (content) yield content;
+            } catch (e) {
+              console.warn('Failed to parse stream data:', dataStr);
             }
-          } catch (e) {
-            // Skip invalid JSON
           }
         }
       }
+  
+      // 处理最后缓存
+      if (buffer.trim() && buffer.startsWith('data:')) {
+        const dataStr = buffer.slice(5).trim();
+        if (dataStr && dataStr !== '[DONE]') {
+          const parsed = JSON.parse(dataStr);
+          const content = parsed.output?.text || '';
+          if (content) yield content;
+        }
+      }
+    } finally {
+      reader.releaseLock();
     }
   }
 }
