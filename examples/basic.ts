@@ -9,7 +9,7 @@ async function main() {
   // 1. 设置 API Keys（首次使用时需要）
   console.log('1. 设置 API Keys...');
   // await setSecret('openai-api-key', 'your-openai-key-here');
-  // await setSecret('qwen-api-key', 'your-qwen-key-here');
+  // await setSecret('qwen-api-key', 'your-openai-key-here');
   console.log('   提示：请取消注释并填入您的 API Key\n');
 
   // 2. 初始化管理器
