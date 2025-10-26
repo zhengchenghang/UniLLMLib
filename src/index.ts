@@ -1,7 +1,7 @@
 // src/index.ts
 export { LLMManager } from './manager';
 export * from './types';
-export { setSecret, getSecret } from './secrets';
+export { setSecret, getSecret, deleteSecret } from './secrets';
 
 // 导出单例实例（可选）
 import { LLMManager } from './manager';
