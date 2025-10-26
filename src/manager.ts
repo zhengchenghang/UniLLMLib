@@ -1,5 +1,6 @@
 // src/manager.ts
 import { randomUUID } from 'crypto';
+import * as path from 'path';
 import {
   ChatCompletionOptions,
   ChatCompletionResponse,
@@ -41,6 +42,7 @@ type NormalizationResult = {
 export class LLMManager {
   private initializationPromise: Promise<void> | null = null;
   private initialized = false;
+  private configPath?: string;
 
   private models: Map<string, SupportedModel> = new Map();
   private templates: Map<string, ConfigTemplate> = new Map();
@@ -53,17 +55,37 @@ export class LLMManager {
   /**
    * 初始化 LLM Manager
    */
-  async init(): Promise<void> {
+  async init(configPath?: string): Promise<void> {
+    const normalizedConfigPath = configPath ? path.resolve(configPath) : undefined;
+
+    const ensureConfigPathMatches = () => {
+      if (!normalizedConfigPath) {
+        return;
+      }
+      if (this.configPath && this.configPath !== normalizedConfigPath) {
+        throw new Error(
+          `LLMManager has already been initialized with a different configuration path: ${this.configPath}`
+        );
+      }
+      if (!this.configPath && this.initialized) {
+        throw new Error(
+          'LLMManager has already been initialized with the default configuration path. Recreate the manager to use a custom configuration path.'
+        );
+      }
+    };
+
     if (this.initialized) {
+      ensureConfigPathMatches();
       return;
     }
 
     if (this.initializationPromise) {
       await this.initializationPromise;
+      ensureConfigPathMatches();
       return;
     }
 
-    this.initializationPromise = this.initializeInternal();
+    this.initializationPromise = this.initializeInternal(normalizedConfigPath);
 
     try {
       await this.initializationPromise;
@@ -72,10 +94,10 @@ export class LLMManager {
     }
   }
 
-  private async initializeInternal(): Promise<void> {
+  private async initializeInternal(configPath?: string): Promise<void> {
     const [models, templates, storedInstances, persistedState] = await Promise.all([
-      loadSupportedModels(),
-      loadTemplates(),
+      loadSupportedModels(configPath),
+      loadTemplates(configPath),
       loadInstances(),
       loadState(),
     ]);
@@ -165,6 +187,7 @@ export class LLMManager {
       await this.persistState();
     }
 
+    this.configPath = configPath;
     this.initialized = true;
   }
 
