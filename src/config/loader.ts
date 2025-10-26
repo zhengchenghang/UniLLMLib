@@ -11,8 +11,8 @@ import {
 } from '../types';
 
 const CONFIG_DIR = __dirname;
-const MODELS_PATH = path.join(CONFIG_DIR, 'models.json');
-const TEMPLATES_PATH = path.join(CONFIG_DIR, 'templates.json');
+const MODELS_FILENAME = 'models.json';
+const TEMPLATES_FILENAME = 'templates.json';
 const DATA_DIR = path.join(os.homedir(), '.unillm');
 const INSTANCES_PATH = path.join(DATA_DIR, 'instances.json');
 const STATE_PATH = path.join(DATA_DIR, 'state.json');
@@ -21,6 +21,64 @@ const DEFAULT_STATE: ManagerState = {
   currentInstanceId: null,
   currentModelId: null,
 };
+
+function resolveConfigFilePath(fileName: string, customConfigPath?: string): string {
+  const candidates: string[] = [];
+
+  const addCandidate = (candidate: string) => {
+    if (!candidates.includes(candidate)) {
+      candidates.push(candidate);
+    }
+  };
+
+  if (customConfigPath) {
+    const resolvedCustomPath = path.resolve(customConfigPath);
+    if (!fs.existsSync(resolvedCustomPath)) {
+      throw new Error(`Provided configuration path does not exist: ${resolvedCustomPath}`);
+    }
+    const stat = fs.statSync(resolvedCustomPath);
+    if (stat.isDirectory()) {
+      addCandidate(path.join(resolvedCustomPath, fileName));
+    } else {
+      if (path.basename(resolvedCustomPath) === fileName) {
+        addCandidate(resolvedCustomPath);
+      }
+      addCandidate(path.join(path.dirname(resolvedCustomPath), fileName));
+    }
+  }
+
+  const defaultDirectories: string[] = [CONFIG_DIR];
+
+  const parentCandidates = [
+    path.resolve(CONFIG_DIR, '..'),
+    path.resolve(CONFIG_DIR, '../..'),
+    path.resolve(CONFIG_DIR, '../../..'),
+    path.resolve(CONFIG_DIR, '../../../..'),
+  ];
+
+  for (const parent of parentCandidates) {
+    defaultDirectories.push(path.join(parent, 'src', 'config'));
+    defaultDirectories.push(path.join(parent, 'config'));
+  }
+
+  for (const dir of defaultDirectories) {
+    addCandidate(path.join(dir, fileName));
+  }
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  const inspected = candidates.join(', ');
+  if (customConfigPath) {
+    throw new Error(
+      `Config file ${fileName} not found. Checked locations derived from provided path ${customConfigPath}: ${inspected}`
+    );
+  }
+  throw new Error(`Config file ${fileName} not found. Checked locations: ${inspected}`);
+}
 
 async function readJsonFile<T>(filePath: string): Promise<T> {
   try {
@@ -41,18 +99,14 @@ async function writeJsonFile<T>(filePath: string, data: T): Promise<void> {
   await fsp.writeFile(filePath, `${json}\n`, 'utf-8');
 }
 
-export async function loadSupportedModels(): Promise<SupportedModel[]> {
-  if (!fs.existsSync(MODELS_PATH)) {
-    throw new Error(`Supported models definition not found at ${MODELS_PATH}`);
-  }
-  return readJsonFile<SupportedModel[]>(MODELS_PATH);
+export async function loadSupportedModels(configPath?: string): Promise<SupportedModel[]> {
+  const modelsPath = resolveConfigFilePath(MODELS_FILENAME, configPath);
+  return readJsonFile<SupportedModel[]>(modelsPath);
 }
 
-export async function loadTemplates(): Promise<ConfigTemplate[]> {
-  if (!fs.existsSync(TEMPLATES_PATH)) {
-    throw new Error(`Config templates definition not found at ${TEMPLATES_PATH}`);
-  }
-  return readJsonFile<ConfigTemplate[]>(TEMPLATES_PATH);
+export async function loadTemplates(configPath?: string): Promise<ConfigTemplate[]> {
+  const templatesPath = resolveConfigFilePath(TEMPLATES_FILENAME, configPath);
+  return readJsonFile<ConfigTemplate[]>(templatesPath);
 }
 
 export function ensureDataDirectory(): void {

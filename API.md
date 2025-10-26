@@ -6,16 +6,19 @@
 
 ### 初始化
 
-#### `init(): Promise<void>`
+#### `init(configPath?: string): Promise<void>`
 
-初始化管理器，加载内置模型与模板，并从本地数据目录（默认 `~/.unillm`）读取配置实例和当前状态。如果本地没有实例文件，会根据模板自动生成默认实例。
+初始化管理器，加载内置模型与模板，并从本地数据目录（默认 `~/.unillm`）读取配置实例和当前状态。如果本地没有实例文件，会根据模板自动生成默认实例。可选的 `configPath` 参数允许从指定路径加载 `models.json` 与 `templates.json`，该路径可以是包含这些文件的目录，也可以是其中任意一个文件本身；未提供时按内置默认位置查找。
 
 ```typescript
 const manager = new LLMManager();
 await manager.init();
+
+const customManager = new LLMManager();
+await customManager.init('/path/to/custom/config');
 ```
 
-> 说明：初始化过程是幂等的；重复调用不会重新写入文件。
+> 说明：初始化过程是幂等的；重复调用不会重新写入文件。已经使用自定义配置初始化后的实例，如需切换到新的配置路径，请创建新的 `LLMManager`。
 
 ### 模型信息
 
