@@ -2,28 +2,29 @@
   "name": "unillm-ts",
   "version": "1.0.0",
   "description": "Unified TypeScript library for multiple LLM providers (OpenAI, Qwen, ZhiPu, Moonshot, Spark)",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "common": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
     },
-    "./package.json": "./package.json"
+    "./package": "./package.json"
   },
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc --project tsconfig.json",
-    "build:cjs": "tsc --project tsconfig.cjs.json",
-    "dev": "tsc --watch --project tsconfig.json",
-    "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "example:basic": "ts-node examples/basic.ts",
-    "example:multi": "ts-node examples/multi-model.ts",
-    "example:conversation": "ts-node examples/conversation.ts",
-    "setup:keys": "ts-node examples/setup-keys.ts"
+    "build:dev": "set NODE_ENV=development&&rollup -c",
+    "build:pro": "set NODE_ENV=production&&rollup -c",
+    "toPublish": "npm publish --registry=https://registry.npmjs.org --access=public",
+    "test": "echo \"No test specified\" && exit 0",
+    "build:umd": "set NODE_ENV=development&&set FORMAT=umd&&rollup -c",
+    "prepare:test": "npm run build:dev && npm run build:umd && cd test-project && npm install",
+    "test:node": "cd test-project && node src/index.js",
+    "test:browser": "npm run prepare:test && start test-project/public/index.html",
+    "dev": "npm run prepare:test && npm run test:node",
+    "example:basic": "npm run dist/es/examples/basic.js"
   },
   "keywords": [
     "llm",
@@ -35,7 +36,8 @@
     "spark",
     "chatgpt",
     "ai",
-    "typescript"
+    "typescript",
+    "rollup"
   ],
   "author": "",
   "license": "MIT",
@@ -43,13 +45,22 @@
     "keytar": "^7.9.0"
   },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "autoprefixer": "^10.4.17",
+    "babel-loader": "^9.2.1",
+    "cssnano": "^6.0.5",
+    "postcss": "^8.4.35",
+    "rollup": "^4.25.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-loader": "^9.5.1",
     "@types/node": "^20.0.0",
     "ts-node": "^10.9.0",
-    "typescript": "^5.0.0",
+    "typescript": "^5.6.3",
     "undici-types": "^6.0.0"
   },
   "files": [
-    "dist",
+    "dist/",
     "src/config/models.json",
     "src/config/templates.json"
   ],
