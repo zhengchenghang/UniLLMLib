@@ -4,28 +4,32 @@
 
 ## 运行示例
 
-首先，确保已安装依赖：
+1. 安装依赖：
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
-然后，设置你的 API Keys：
+2. 配置凭证：
+   - **推荐** 设置以下环境变量，示例脚本会自动读取：
+     - `OPENAI_API_KEY`
+     - `QWEN_API_KEY`
+     - `QWEN_ACCESS_KEY_ID`
+     - `QWEN_ACCESS_KEY_SECRET`
+     - `ZHIPU_API_KEY`
+     - `MOONSHOT_API_KEY`
+     - `SPARK_APP_ID`
+     - `SPARK_API_KEY`
+     - `SPARK_API_SECRET`
+   - 或运行 `npm run examples:setup` 查看各实例缺少的字段并获取写入指引。
 
-```typescript
-// 使用 Node.js 运行以下代码设置 API Key
-import { setSecret } from 'unillm-ts';
-
-await setSecret('qwen-api-key', 'your-qwen-api-key');
-await setSecret('openai-api-key', 'your-openai-api-key');
-// ... 其他 API Keys
-```
+在某些尚未实现安全存储的平台上，示例会自动回退到 `~/.unillm/examples-secrets.json` 文件保存凭证，该方式仅适用于本地调试，请勿用于生产环境。
 
 ## 示例列表
 
 ### 1. basic.ts - 基础使用
 
-演示了库的基本功能：
+演示库的核心功能：
 - 初始化
 - 查询模型列表
 - 选择模型
@@ -35,7 +39,7 @@ await setSecret('openai-api-key', 'your-openai-api-key');
 
 运行：
 ```bash
-npx ts-node examples/basic.ts
+npm run examples:basic
 ```
 
 ### 2. multi-model.ts - 多模型对比
@@ -44,7 +48,7 @@ npx ts-node examples/basic.ts
 
 运行：
 ```bash
-npx ts-node examples/multi-model.ts
+npm run examples:multi-model
 ```
 
 ### 3. conversation.ts - 多轮对话
@@ -53,7 +57,22 @@ npx ts-node examples/multi-model.ts
 
 运行：
 ```bash
-npx ts-node examples/conversation.ts
+npm run examples:conversation
+```
+
+### 4. setup-keys.ts - 凭证配置助手
+
+帮助你检查当前凭证状态，并给出环境变量或 `setSecret` 写入示例。
+
+运行：
+```bash
+npm run examples:setup
+```
+
+你也可以一次性运行所有示例（除凭证检查外）：
+
+```bash
+npm run examples:all
 ```
 
 ## 自定义示例
@@ -84,4 +103,3 @@ myApp();
 - [完整文档](../README.md)
 - [API 参考](../API.md)
 - [快速开始](../QUICKSTART.md)
-

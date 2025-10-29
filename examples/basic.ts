@@ -1,23 +1,39 @@
 // examples/basic.ts - 基础使用示例
 
-import llmManager, { setSecret } from '../src/index';
+import llmManager from '../src/index';
+import {
+  prepareExampleSecrets,
+  syncSecretsFromEnv,
+  getMissingSecretFields,
+  printMissingSecretHelp,
+} from './helpers';
 
 async function main() {
   console.log('=== UniLLM-TS 基础使用示例 ===\n');
 
-  // 1. 设置 API Keys（首次使用时需要）
-  console.log('1. 设置 API Keys...');
-  // await setSecret('openai-default-api_key', 'your-openai-key-here');
-  // await setSecret('qwen-default-api_key', 'your-qwen-key-here');
-  console.log('   提示：请在首次运行时取消注释并填入您的 API Key\n');
-
-  // 2. 初始化管理器
-  console.log('2. 初始化 LLM Manager...');
+  // 1. 初始化环境与加载凭证
+  console.log('1. 初始化环境与加载凭证...');
+  const fallbackPath = await prepareExampleSecrets();
   await llmManager.init();
-  console.log('   ✓ 初始化完成\n');
+  console.log('   ✓ LLM Manager 初始化完成');
 
-  // 3. 查询支持的模型与模板
-  console.log('3. 查询支持的模型与模板:');
+  if (fallbackPath) {
+    console.log(`   ⚠️ 当前平台尚未提供安全存储，示例将使用文件方式保存在: ${fallbackPath}`);
+    console.log('   ⚠️ 该方式仅用于示例演示，请勿在生产环境中使用。');
+  }
+
+  const instances = llmManager.listInstances();
+  const syncedEnvVars = await syncSecretsFromEnv(instances);
+  if (syncedEnvVars.length > 0) {
+    console.log(`   ✓ 已从环境变量加载 ${syncedEnvVars.length} 个凭证`);
+  } else {
+    console.log('   ℹ️  未检测到环境变量提供的凭证');
+    console.log('   提示：可以运行 examples/setup-keys.ts 或设置对应的环境变量来配置 API Key');
+  }
+  console.log();
+
+  // 2. 查询支持的模型与模板
+  console.log('2. 查询支持的模型与模板:');
   const models = llmManager.listModels();
   console.log('   模型 ID:', models);
 
@@ -33,15 +49,14 @@ async function main() {
     console.log(`   - ${tpl.id} (${tpl.name}) -> models: ${tpl.modelIds.join(', ')}`);
   });
 
-  const instances = llmManager.listInstances();
   console.log('\n   当前配置实例:');
   instances.forEach(inst => {
     console.log(`   - ${inst.id} (${inst.name}) <- ${inst.templateId}, selected model: ${inst.selectedModelId ?? '未设置'}`);
   });
   console.log();
 
-  // 4. 选择实例与模型
-  console.log('4. 选择实例与模型...');
+  // 3. 选择实例与模型
+  console.log('3. 选择实例与模型...');
   const qwenInstance = instances.find(inst => inst.templateId === 'qwen') ?? instances[0];
   if (!qwenInstance) {
     throw new Error('未找到可用的配置实例，请确认模板数据是否正确');
@@ -52,25 +67,39 @@ async function main() {
 
   const targetModel = 'qwen-plus';
   await llmManager.setCurrentModel(targetModel);
-  console.log(`   ✓ 已选择模型: ${llmManager.getCurrentModel()}\n`);
+  console.log(`   ✓ 已选择模型: ${llmManager.getCurrentModel()}`);
 
-  // 5. 查询模型配置
-  console.log('5. 查询模型配置（脱敏）：');
+  const missingSecrets = await getMissingSecretFields(qwenInstance);
+  if (missingSecrets.length === 0) {
+    console.log('   ✓ 必要凭证已配置\n');
+  } else {
+    console.log();
+    printMissingSecretHelp(qwenInstance, missingSecrets);
+    console.log('   由于缺少凭证，后续对话示例将被跳过。\n');
+  }
+
+  // 4. 查询模型配置
+  console.log('4. 查询模型配置（脱敏）：');
   const config = llmManager.getModelConfig(targetModel);
   console.log('   ', JSON.stringify(config, null, 2), '\n');
 
-  // 6. 简单对话（非流式）
-  console.log('6. 简单对话测试（非流式）：');
+  if (missingSecrets.length > 0) {
+    console.log('=== 示例完成（因凭证缺失未执行对话调用） ===');
+    return;
+  }
+
+  // 5. 简单对话（非流式）
+  console.log('5. 简单对话测试（非流式）：');
   try {
     const response = await llmManager.chatSimple('你好！请用一句话介绍你自己。');
     console.log('   回复:', response, '\n');
   } catch (error) {
     console.log('   ❌ 错误:', (error as Error).message);
-    console.log('   提示：请确保已正确配置 API Key\n');
+    console.log('   提示：请确认已正确配置 API Key\n');
   }
 
-  // 7. 流式对话
-  console.log('7. 流式对话测试：');
+  // 6. 流式对话
+  console.log('6. 流式对话测试：');
   console.log('   问题: 请写一首关于春天的五言绝句');
   console.log('   回复: ');
   try {
@@ -83,8 +112,8 @@ async function main() {
     console.log('   ❌ 错误:', (error as Error).message, '\n');
   }
 
-  // 8. 高级对话接口
-  console.log('8. 高级对话接口（带系统提示）：');
+  // 7. 高级对话接口
+  console.log('7. 高级对话接口（带系统提示）：');
   try {
     const response = await llmManager.chat({
       messages: [
