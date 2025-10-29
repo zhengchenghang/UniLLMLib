@@ -151,6 +151,29 @@ export async function saveState(state: ManagerState): Promise<void> {
   await writeJsonFile(STATE_PATH, state);
 }
 
+async function getFileMTime(filePath: string): Promise<number | null> {
+  try {
+    const stats = await fsp.stat(filePath);
+    return stats.mtimeMs;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function getInstancesFileMTime(): Promise<number | null> {
+  ensureDataDirectory();
+  return getFileMTime(INSTANCES_PATH);
+}
+
+export async function getStateFileMTime(): Promise<number | null> {
+  ensureDataDirectory();
+  return getFileMTime(STATE_PATH);
+}
+
 export function getDataDirectory(): string {
   ensureDataDirectory();
   return DATA_DIR;

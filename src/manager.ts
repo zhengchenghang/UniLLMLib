@@ -20,6 +20,8 @@ import {
   saveInstances,
   loadState,
   saveState,
+  getInstancesFileMTime,
+  getStateFileMTime,
 } from './config/loader';
 import { resolveValue, setSecret, getSecret, deleteSecret } from './secrets';
 
@@ -51,6 +53,9 @@ export class LLMManager {
 
   private currentInstanceId: string | null = null;
   private currentModelId: string | null = null;
+  private instancesFileMTime: number | null = null;
+  private stateFileMTime: number | null = null;
+  private reloadPromise: Promise<void> | null = null;
 
   /**
    * 初始化 LLM Manager
@@ -189,6 +194,8 @@ export class LLMManager {
 
     this.configPath = configPath;
     this.initialized = true;
+
+    await this.captureStorageTimestamps();
   }
 
   private normalizeInstance(instance: ConfigInstance, template: ConfigTemplate): NormalizationResult {
@@ -364,6 +371,7 @@ export class LLMManager {
       return a.createdAt.localeCompare(b.createdAt);
     });
     await saveInstances(orderedInstances);
+    this.instancesFileMTime = await getInstancesFileMTime();
   }
 
   private async persistState(): Promise<void> {
@@ -371,6 +379,64 @@ export class LLMManager {
       currentInstanceId: this.currentInstanceId,
       currentModelId: this.currentModelId,
     });
+    this.stateFileMTime = await getStateFileMTime();
+  }
+
+  private async captureStorageTimestamps(): Promise<void> {
+    const [instancesMTime, stateMTime] = await Promise.all([
+      getInstancesFileMTime(),
+      getStateFileMTime(),
+    ]);
+
+    this.instancesFileMTime = instancesMTime;
+    this.stateFileMTime = stateMTime;
+  }
+
+  private areTimestampsEqual(a: number | null, b: number | null): boolean {
+    return a === b;
+  }
+
+  private async refreshFromStorageIfNeeded(): Promise<void> {
+    if (!this.initialized) {
+      return;
+    }
+
+    if (this.reloadPromise) {
+      await this.reloadPromise;
+      return;
+    }
+
+    const [instancesMTime, stateMTime] = await Promise.all([
+      getInstancesFileMTime(),
+      getStateFileMTime(),
+    ]);
+
+    const instancesChanged = !this.areTimestampsEqual(this.instancesFileMTime, instancesMTime);
+    const stateChanged = !this.areTimestampsEqual(this.stateFileMTime, stateMTime);
+
+    if (!instancesChanged && !stateChanged) {
+      return;
+    }
+
+    await this.reloadFromStorage();
+  }
+
+  private async reloadFromStorage(): Promise<void> {
+    if (this.reloadPromise) {
+      await this.reloadPromise;
+      return;
+    }
+
+    const reloadPromise = this.initializeInternal(this.configPath);
+    this.reloadPromise = reloadPromise;
+
+    try {
+      await reloadPromise;
+    } finally {
+      if (this.reloadPromise === reloadPromise) {
+        this.reloadPromise = null;
+      }
+    }
   }
 
   private toSummary(instance: ConfigInstance): ConfigInstanceSummary {
@@ -519,6 +585,7 @@ export class LLMManager {
 
   private async resolveInvocationTarget(selector?: ChatSelector): Promise<{ instance: ConfigInstance; modelId: string }> {
     this.ensureInitialized();
+    await this.refreshFromStorageIfNeeded();
 
     let instanceId = this.currentInstanceId;
     let modelId: string | undefined;
@@ -599,6 +666,7 @@ export class LLMManager {
    */
   async createInstanceFromTemplate(templateIdentifier: string, options?: InstanceCreationOptions): Promise<ConfigInstanceSummary> {
     this.ensureInitialized();
+    await this.refreshFromStorageIfNeeded();
 
     const template = this.resolveTemplateIdentifier(templateIdentifier);
     if (!template) {
@@ -648,6 +716,7 @@ export class LLMManager {
    */
   async updateInstance(instanceId: string, payload: InstanceUpdatePayload): Promise<ConfigInstanceSummary> {
     this.ensureInitialized();
+    await this.refreshFromStorageIfNeeded();
 
     const instance = this.instances.get(instanceId);
     if (!instance) {
@@ -715,6 +784,7 @@ export class LLMManager {
    */
   async setCurrentInstance(instanceId: string): Promise<void> {
     this.ensureInitialized();
+    await this.refreshFromStorageIfNeeded();
 
     const instance = this.instances.get(instanceId);
     if (!instance) {
@@ -779,6 +849,7 @@ export class LLMManager {
    */
   async setCurrentModel(modelId: string): Promise<void> {
     this.ensureInitialized();
+    await this.refreshFromStorageIfNeeded();
 
     if (!this.currentInstanceId) {
       throw new Error('No configuration instance selected');
