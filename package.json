@@ -24,7 +24,11 @@
     "test:node": "cd test-project && node src/index.js",
     "test:browser": "npm run prepare:test && start test-project/public/index.html",
     "dev": "npm run prepare:test && npm run test:node",
-    "example:basic": "npm run dist/es/examples/basic.js"
+    "examples:setup": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/setup-keys.ts",
+    "examples:basic": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/basic.ts",
+    "examples:conversation": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/conversation.ts",
+    "examples:multi-model": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-model.ts",
+    "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model"
   },
   "keywords": [
     "llm",

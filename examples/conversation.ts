@@ -1,13 +1,27 @@
 // examples/conversation.ts - 多轮对话示例
 
 import llmManager, { Message } from '../src/index';
+import {
+  prepareExampleSecrets,
+  syncSecretsFromEnv,
+  getMissingSecretFields,
+  printMissingSecretHelp,
+} from './helpers';
 
 async function main() {
   console.log('=== 多轮对话示例 ===\n');
 
+  const fallbackPath = await prepareExampleSecrets();
   await llmManager.init();
 
+  if (fallbackPath) {
+    console.log(`⚠️  使用文件存储示例凭证：${fallbackPath}`);
+    console.log('⚠️  请勿在生产环境中使用该方式存储密钥。\n');
+  }
+
   const instances = llmManager.listInstances();
+  await syncSecretsFromEnv(instances);
+
   const qwenInstance = instances.find(inst => inst.templateId === 'qwen') ?? instances[0];
   if (!qwenInstance) {
     throw new Error('未找到可用的配置实例');
@@ -15,6 +29,14 @@ async function main() {
 
   await llmManager.setCurrentInstance(qwenInstance.id);
   await llmManager.setCurrentModel('qwen-plus');
+
+  const missingSecrets = await getMissingSecretFields(qwenInstance);
+  if (missingSecrets.length > 0) {
+    printMissingSecretHelp(qwenInstance, missingSecrets);
+    console.log('由于缺少凭证，本示例仅展示上下文维护流程，未发起真实的 API 调用。');
+    console.log('=== 对话结束 ===');
+    return;
+  }
 
   // 维护对话历史
   const conversationHistory: Message[] = [

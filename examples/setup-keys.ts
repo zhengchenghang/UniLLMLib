@@ -1,65 +1,76 @@
 // examples/setup-keys.ts - 首次使用：设置 API Keys
 
-import { setSecret } from '../src/index';
+import { LLMManager } from '../src/index';
+import {
+  prepareExampleSecrets,
+  syncSecretsFromEnv,
+  getMissingSecretFields,
+  describeSecretField,
+  SECRET_ENV_MAP,
+} from './helpers';
 
 /**
- * 首次使用时运行此脚本来设置你的 API Keys
- * 
- * 运行方式:
- * npx ts-node examples/setup-keys.ts
+ * 首次使用时运行此脚本来设置你的 API Keys。
+ *
+ * 推荐优先使用环境变量，示例会自动读取以下变量：
+ * OPENAI_API_KEY、QWEN_API_KEY、QWEN_ACCESS_KEY_ID、QWEN_ACCESS_KEY_SECRET、
+ * ZHIPU_API_KEY、MOONSHOT_API_KEY、SPARK_APP_ID、SPARK_API_KEY、SPARK_API_SECRET
  */
 
 async function setupKeys() {
   console.log('=== UniLLM-TS API Key 设置工具 ===\n');
 
-  try {
-    // OpenAI 默认实例
-    // await setSecret('openai-default-api_key', 'sk-your-openai-key-here');
-    // console.log('✓ OpenAI API Key 已设置');
+  const fallbackPath = await prepareExampleSecrets();
+  const manager = new LLMManager();
+  await manager.init();
 
-    // 通义千问默认实例（根据模板需要，可以额外设置 access key）
-    // await setSecret('qwen-default-api_key', 'your-qwen-api-key-here');
-    // await setSecret('qwen-default-access_key_id', 'your-aliyun-ak');
-    // await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
-    // console.log('✓ Qwen 凭证已设置');
-
-    // 智谱 AI 默认实例
-    // await setSecret('zhipu-default-api_key', 'your-zhipu-api-key-here');
-    // console.log('✓ ZhiPu API Key 已设置');
-
-    // Moonshot Kimi 默认实例
-    // await setSecret('moonshot-default-api_key', 'your-kimi-api-key-here');
-    // console.log('✓ Kimi API Key 已设置');
-
-    // 讯飞星火默认实例
-    // await setSecret('spark-default-app_id', 'your-app-id');
-    // await setSecret('spark-default-api_key', 'your-api-key');
-    // await setSecret('spark-default-api_secret', 'your-api-secret');
-    // console.log('✓ Spark API Keys 已设置');
-
-    console.log('\n提示: 请取消注释并填入你的实际 API Key');
-    console.log('\n如何获取 API Key:');
-    console.log('- OpenAI: https://platform.openai.com/api-keys');
-    console.log('- 通义千问: https://dashscope.console.aliyun.com/');
-    console.log('- 智谱 AI: https://open.bigmodel.cn/');
-    console.log('- Moonshot: https://platform.moonshot.cn/');
-    console.log('- 讯飞星火: https://console.xfyun.cn/');
-
-    console.log('\n设置完成后，你可以运行:');
-    console.log('npx ts-node examples/basic.ts');
-
-  } catch (error) {
-    console.error('错误:', (error as Error).message);
-    
-    if ((error as Error).message.includes('keytar')) {
-      console.log('\n提示: keytar 未安装或不可用');
-      console.log('你可以选择:');
-      console.log('1. 安装 keytar 的系统依赖 (参考 INSTALL.md)');
-      console.log('2. 直接在配置文件中使用明文 API Key (仅开发环境)');
-      console.log('3. 使用环境变量');
-    }
+  if (fallbackPath) {
+    console.log(`⚠️  当前平台未提供安全存储，示例将采用文件方式保存凭证: ${fallbackPath}`);
+    console.log('⚠️  请勿在生产环境中使用该方式保存敏感信息。\n');
   }
+
+  const instances = manager.listInstances();
+  const applied = await syncSecretsFromEnv(instances);
+
+  if (applied.length > 0) {
+    console.log(`✓ 已根据以下环境变量写入凭证: ${applied.join(', ')}`);
+  } else {
+    console.log('ℹ️  未检测到环境变量中的凭证，请根据下方提示进行配置。');
+  }
+
+  console.log('\n支持的环境变量映射:');
+  Object.entries(SECRET_ENV_MAP).forEach(([templateId, fieldMap]) => {
+    const fields = Object.entries(fieldMap)
+      .map(([field, envVar]) => `${field} -> ${envVar}`)
+      .join(', ');
+    console.log(` - ${templateId}: ${fields}`);
+  });
+
+  console.log('\n当前实例凭证状态:');
+  for (const instance of instances) {
+    const missing = await getMissingSecretFields(instance);
+    if (missing.length === 0) {
+      console.log(`✓ ${instance.name}: 所有凭证已配置`);
+      continue;
+    }
+
+    console.log(`⚠️  ${instance.name} 缺少以下字段:`);
+    missing.forEach(field => {
+      console.log(`   - ${describeSecretField(instance, field)}`);
+    });
+  }
+
+  console.log('\n如果需要通过脚本写入，可以调用 setSecret。例如：');
+  instances.forEach(instance => {
+    Object.entries(instance.secretKeys).forEach(([field, secretKey]) => {
+      console.log(`await setSecret('${secretKey}', '<your-${field}-value>');`);
+    });
+  });
+
+  console.log('\n设置完成后，你可以运行以下命令验证示例:');
+  console.log('npm run examples:basic');
 }
 
-setupKeys();
-
+setupKeys().catch(error => {
+  console.error('错误:', (error as Error).message);
+});
