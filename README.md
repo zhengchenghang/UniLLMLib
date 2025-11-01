@@ -12,6 +12,7 @@
 - 🔄 **统一接口**：提供一致的对话调用方式
 - 🔌 **可扩展**：支持文本对话，后续可扩展其他数据格式
 - 🔒 **安全存储**：支持加密存储 API Key（使用 keytar）
+- 👥 **多用户支持**：内置用户上下文管理，不同用户的密钥自动隔离
 - 📦 **易集成**：作为 npm 包，一行代码引入
 - ⚙️ **配置管理**：通过模板与实例管理 API Key、模型、超参等
 
@@ -200,11 +201,73 @@ interface ModelInfo {
 
 #### `setSecret(key: string, value: string): Promise<void>`
 
-存储敏感信息（如 API Key）。
+存储敏感信息（如 API Key）。如果设置了用户ID，会自动实现用户隔离。
 
 #### `getSecret(key: string): Promise<string | null>`
 
-获取存储的敏感信息。
+获取存储的敏感信息。如果设置了用户ID，会自动获取该用户的密钥。
+
+#### `deleteSecret(key: string): Promise<boolean>`
+
+删除敏感信息。
+
+#### `getAllSecrets(): Promise<string[]>`
+
+获取所有密钥的key列表。如果设置了用户ID，只返回当前用户的密钥。
+
+#### `clearAllSecrets(): Promise<void>`
+
+清除所有密钥。如果设置了用户ID，只清除当前用户的密钥。
+
+### 用户上下文管理
+
+对于多用户应用，可以使用用户上下文管理功能来隔离不同用户的密钥：
+
+#### `setCurrentUserId(userId: string): void`
+
+设置当前用户ID，之后的所有密钥操作都会自动与该用户关联。
+
+```typescript
+import { setCurrentUserId, setSecret } from 'unillm-ts';
+
+// 用户登录时设置用户ID
+setCurrentUserId('user-alice');
+
+// 该密钥会自动与用户alice关联
+await setSecret('openai-default-api_key', 'alice-key-123');
+```
+
+#### `getCurrentUserId(): string | null`
+
+获取当前用户ID。
+
+#### `clearCurrentUserId(): void`
+
+清除当前用户ID（通常在用户登出时调用）。
+
+#### `hasCurrentUserId(): boolean`
+
+检查是否已设置用户ID。
+
+**多用户使用场景：**
+
+```typescript
+import { setCurrentUserId, clearCurrentUserId, setSecret, getSecret } from 'unillm-ts';
+
+// 用户A登录
+setCurrentUserId('user-alice');
+await setSecret('openai-default-api_key', 'alice-key-123');
+
+// 用户A登出
+clearCurrentUserId();
+
+// 用户B登录
+setCurrentUserId('user-bob');
+await setSecret('openai-default-api_key', 'bob-key-456');
+
+// 用户B获取密钥（不会获取到用户A的密钥）
+const bobKey = await getSecret('openai-default-api_key'); // 返回 'bob-key-456'
+```
 
 ## 配置数据说明
 

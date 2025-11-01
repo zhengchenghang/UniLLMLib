@@ -69,6 +69,15 @@ npm run examples:conversation
 npm run examples:setup
 ```
 
+### 5. multi-user.ts - 多用户隔离
+
+演示如何使用用户上下文管理功能来隔离不同用户的密钥，适用于多用户应用场景。
+
+运行：
+```bash
+npm run examples:multi-user
+```
+
 你也可以一次性运行所有示例（除凭证检查外）：
 
 ```bash
