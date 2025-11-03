@@ -1,14 +1,14 @@
-# 快速开始
+# Quick Start
 
-本指南将帮助你在 5 分钟内开始使用 UniLLM-TS，并了解模板 + 实例的配置方式。
+This guide walks you through getting started with UniLLM-TS in five minutes and explains how templates and instances work together.
 
-## 1. 安装
+## 1. Install
 
 ```bash
 npm install unillm-ts
 ```
 
-## 2. 初始化并查看模板/实例
+## 2. Initialize and Inspect Templates/Instances
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -26,16 +26,16 @@ console.log('Instances:', instances.map(inst => ({
 })));
 ```
 
-> 小提示：初始化后会在用户目录 `~/.unillm/` 下生成 `instances.json` 和 `state.json`，用于持久化配置实例和当前状态。
+> Tip: After initialization the library creates `instances.json` and `state.json` under `~/.unillm/` to persist configuration instances and current state.
 
-## 3. 配置 API 密钥
+## 3. Provide API Keys
 
-每个实例的 `secretKeys` 字段会列出需要设置的密钥名称。使用 `setSecret` 写入真实的 API Key：
+Each instance exposes a `secretKeys` field that lists the secret names you must set. Use `setSecret` to store real API keys:
 
 ```typescript
 import { setSecret } from 'unillm-ts';
 
-// 默认实例的密钥命名格式: <实例ID>-<字段名>
+// Default instance key naming: <instanceId>-<field>
 await setSecret('qwen-default-api_key', 'your-qwen-key');
 await setSecret('qwen-default-access_key_id', 'your-aliyun-ak');
 await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
@@ -43,9 +43,9 @@ await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
 await setSecret('openai-default-api_key', 'sk-your-openai-key');
 ```
 
-自定义实例会按生成的实例 ID 命名，例如 `openai-<uuid>-api_key`。你可以通过 `listInstances()` 随时查看。
+Custom instances follow the generated instance ID, for example `openai-<uuid>-api_key`. Call `listInstances()` whenever you need to confirm the names.
 
-## 4. 发送第一条消息
+## 4. Send Your First Message
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -55,32 +55,32 @@ async function main() {
 
   const instances = llmManager.listInstances();
   const qwen = instances.find(inst => inst.templateId === 'qwen');
-  if (!qwen) throw new Error('没有可用的 Qwen 实例');
+  if (!qwen) throw new Error('No Qwen instance available.');
 
   await llmManager.setCurrentInstance(qwen.id);
   await llmManager.setCurrentModel('qwen-plus');
 
-  const reply = await llmManager.chatSimple('你好，请介绍一下自己');
+  const reply = await llmManager.chatSimple('Hello, can you introduce yourself?');
   console.log(reply);
 }
 
 main().catch(console.error);
 ```
 
-## 5. 流式响应
+## 5. Streaming Responses
 
 ```typescript
 await llmManager.init();
 await llmManager.setCurrentInstance('openai-default');
 await llmManager.setCurrentModel('gpt-4o');
 
-const stream = await llmManager.chatStream('写一首关于春天的诗');
+const stream = await llmManager.chatStream('Write a poem about spring.');
 for await (const chunk of stream) {
   process.stdout.write(chunk);
 }
 ```
 
-## 6. 多轮对话
+## 6. Multi-turn Conversations
 
 ```typescript
 import llmManager, { Message } from 'unillm-ts';
@@ -90,8 +90,8 @@ await llmManager.setCurrentInstance('qwen-default');
 await llmManager.setCurrentModel('qwen-plus');
 
 const history: Message[] = [
-  { role: 'system', content: '你是一个友好的助手' },
-  { role: 'user', content: '什么是 TypeScript？' },
+  { role: 'system', content: 'You are a friendly assistant.' },
+  { role: 'user', content: 'What is TypeScript?' },
 ];
 
 const response = await llmManager.chat({ messages: history, stream: false });
@@ -101,65 +101,65 @@ history.push({ role: 'assistant', content: response.content });
 console.log(response.content);
 ```
 
-## 7. 切换模型
+## 7. Switch Models
 
 ```typescript
 await llmManager.init();
 await llmManager.setCurrentInstance('openai-default');
 
-console.log('可用模型:', llmManager.getCurrentInstanceModels().map(m => m.id));
+console.log('Available models:', llmManager.getCurrentInstanceModels().map(m => m.id));
 await llmManager.setCurrentModel('gpt-4o');
 
 const answer = await llmManager.chatSimple('Hello!');
 console.log(answer);
 ```
 
-也可以在单次调用时传入 `selector` 参数：
+You can also specify a `selector` for ad-hoc calls:
 
 ```typescript
 const reply = await llmManager.chatSimple('Hello!', { modelId: 'glm-4' });
 const special = await llmManager.chatSimple('Ping', { instanceId: 'openai-default', modelId: 'gpt-4o' });
 ```
 
-## 8. 完整示例
+## 8. End-to-end Example
 
 ```typescript
 import llmManager, { setSecret } from 'unillm-ts';
 
 async function main() {
-  // 1. 初始化（首次运行前请先 setSecret）
+  // 1. Initialize (make sure to call setSecret beforehand)
   await llmManager.init();
 
-  // 2. 查看支持的模型与模板
-  console.log('模型列表:', llmManager.getModelsInfo().map(m => m.id));
-  console.log('模板:', llmManager.getConfigTemplates().map(t => t.id));
+  // 2. Inspect supported models and templates
+  console.log('Model IDs:', llmManager.getModelsInfo().map(m => m.id));
+  console.log('Templates:', llmManager.getConfigTemplates().map(t => t.id));
 
-  // 3. 选择实例与模型
+  // 3. Choose an instance and model
   const instances = llmManager.listInstances();
   const openai = instances.find(inst => inst.templateId === 'openai');
-  if (!openai) throw new Error('未找到 OpenAI 实例');
+  if (!openai) throw new Error('OpenAI instance not found.');
 
   await llmManager.setCurrentInstance(openai.id);
   await llmManager.setCurrentModel('gpt-4o');
 
-  // 4. 简单对话
-  console.log('\n=== 简单对话 ===');
-  console.log(await llmManager.chatSimple('什么是人工智能？'));
+  // 4. Simple chat
+  console.log('\n=== Simple Chat ===');
+  console.log(await llmManager.chatSimple('What is artificial intelligence?'));
 
-  // 5. 流式对话
-  console.log('\n=== 流式对话 ===');
-  const stream = await llmManager.chatStream('写一个 Hello World 程序');
+  // 5. Streaming chat
+  console.log('\n=== Streaming Chat ===');
+  const stream = await llmManager.chatStream('Write a Hello World program.');
   for await (const chunk of stream) {
     process.stdout.write(chunk);
   }
   console.log('\n');
 
-  // 6. 高级用法 - 带系统提示
-  console.log('\n=== 带系统提示的对话 ===');
+  // 6. Advanced usage with a system prompt
+  console.log('\n=== Chat with System Prompt ===');
   const response = await llmManager.chat({
     messages: [
-      { role: 'system', content: '你是一个专业的 TypeScript 开发者' },
-      { role: 'user', content: '如何在 TS 中使用泛型？' },
+      { role: 'system', content: 'You are a professional TypeScript developer.' },
+      { role: 'user', content: 'How do I use generics in TypeScript?' },
     ],
     temperature: 0.7,
     max_tokens: 500,
@@ -172,32 +172,32 @@ async function main() {
 
   console.log(response.content);
   if (response.usage) {
-    console.log('\nToken 使用:', response.usage);
+    console.log('\nToken usage:', response.usage);
   }
 }
 
 main().catch(console.error);
 ```
 
-## 9. 常见问题
+## 9. FAQ
 
-### Q: 如何获取密钥名称？
-初始化后调用 `listInstances()`，查看实例的 `secretKeys` 字段即可。
+### Q: How do I discover secret names?
+Call `listInstances()` after initialization and inspect each instance's `secretKeys` field.
 
-### Q: 数据存储在哪里？
-默认在 `~/.unillm/` 目录下的 `instances.json` 与 `state.json`。你可以备份或删除它们来重置配置。
+### Q: Where is data stored?
+By default in the `~/.unillm/` directory (`instances.json` and `state.json`). Back up or delete those files if you need to reset your configuration.
 
-### Q: 可以修改模板或模型吗？
-模板与模型定义位于包内的 `src/config/*.json`，仅在构建阶段修改。运行时可以创建新的实例来自定义配置覆盖。
+### Q: Can I modify templates or models?
+Templates and models live in `src/config/*.json` and should be edited during development only. At runtime you can create new instances and override configuration values.
 
-### Q: keytar 安装失败怎么办？
-目前需要系统支持 `keytar` 才能安全存储密钥。开发环境下可临时使用 `setSecret` 存放假的值，或改用环境变量方案。
+### Q: What if keytar fails to install?
+Keytar requires OS-specific dependencies. During development you can temporarily store placeholder values with `setSecret`, or fall back to environment variables.
 
-### Q: 支持哪些模型？
-查看 `llmManager.getModelsInfo()` 或参考 README。默认包含 OpenAI、通义千问、智谱、Moonshot、讯飞星火的典型模型。
+### Q: Which models are supported?
+Use `llmManager.getModelsInfo()` or check the README. The bundle currently includes representative models from OpenAI, Qwen, Zhipu, Moonshot, and iFlytek Spark.
 
-## 10. 下一步
+## 10. Where to Go Next
 
-- 阅读 [README](./README.md) 了解更多
-- 查阅 [API 参考](./API.md)
-- 浏览 [示例代码](./examples/)
+- Read the [README](./README.md) for more details
+- Consult the [API reference](./API.md)
+- Explore the [example scripts](./examples/)

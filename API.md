@@ -1,14 +1,14 @@
-# API 参考文档
+# API Reference
 
-## 类: LLMManager
+## Class: `LLMManager`
 
-`LLMManager` 是库的核心管理类，负责加载内置模型与模板、管理运行时配置实例，并统一对接各个 LLM 提供商的聊天接口。
+`LLMManager` is the core class of the library. It loads bundled models and templates, manages runtime configuration instances, and normalizes chat interfaces for every LLM provider.
 
-### 初始化
+### Initialization
 
 #### `init(configPath?: string): Promise<void>`
 
-初始化管理器，加载内置模型与模板，并从本地数据目录（默认 `~/.unillm`）读取配置实例和当前状态。如果本地没有实例文件，会根据模板自动生成默认实例。可选的 `configPath` 参数允许从指定路径加载 `models.json` 与 `templates.json`，该路径可以是包含这些文件的目录，也可以是其中任意一个文件本身；未提供时按内置默认位置查找。
+Initializes the manager, loads built-in models and templates, and reads configuration instances and the current state from the local data directory (defaults to `~/.unillm`). If no instances exist yet, default instances are generated from the templates. The optional `configPath` parameter allows you to load `models.json` and `templates.json` from a custom path. The path can point to a directory containing both files or to either file individually. When omitted, the built-in defaults are used.
 
 ```typescript
 const manager = new LLMManager();
@@ -18,21 +18,21 @@ const customManager = new LLMManager();
 await customManager.init('/path/to/custom/config');
 ```
 
-> 说明：初始化过程是幂等的；重复调用不会重新写入文件。已经使用自定义配置初始化后的实例，如需切换到新的配置路径，请创建新的 `LLMManager`。
+> Initialization is idempotent; repeated calls do not rewrite local files. After initializing a manager with a custom configuration path, create a new `LLMManager` if you want to switch to another configuration source.
 
-### 模型信息
+### Model Information
 
 #### `listModels(): string[]`
-返回所有支持的模型 ID 列表。
+Returns a list of supported model IDs.
 
 #### `getModelsInfo(): ModelInfo[]`
-返回全部模型的详细信息。
+Returns detailed information for every model.
 
 #### `getSupportedModels(): SupportedModel[]`
-与 `getModelsInfo` 等价，提供完整模型描述。
+Equivalent to `getModelsInfo()`, providing the full model descriptors.
 
 #### `getCurrentInstanceModels(): SupportedModel[]`
-返回当前选中实例可用的模型列表。
+Returns the models available to the currently selected instance.
 
 ```typescript
 const models = manager.getModelsInfo();
@@ -41,7 +41,7 @@ models.forEach(model => {
 });
 ```
 
-`ModelInfo`/`SupportedModel` 结构：
+Structure of `ModelInfo` / `SupportedModel`:
 
 ```typescript
 interface SupportedModel {
@@ -58,39 +58,39 @@ interface SupportedModel {
 }
 ```
 
-### 模板与实例管理
+### Template and Instance Management
 
 #### `getConfigTemplates(): ConfigTemplate[]`
-读取内置模板列表（只读）。
+Returns the built-in template list (read-only).
 
 #### `createInstanceFromTemplate(templateId: string, options?: InstanceCreationOptions): Promise<ConfigInstanceSummary>`
-基于模板创建新的配置实例，可自定义名称、配置覆盖和预设模型。
+Creates a new configuration instance from a template. You can customize the name, configuration overrides, and default model.
 
 #### `listInstances(): ConfigInstanceSummary[]`
-列出全部实例（密钥字段会以 `[secure]` 形式呈现）。
+Lists all instances. Secret values are masked with `[secure]`.
 
 #### `getInstance(instanceId: string): ConfigInstanceSummary | null`
-获取单个实例信息。
+Returns information about a single instance.
 
 #### `updateInstance(instanceId: string, payload: InstanceUpdatePayload): Promise<ConfigInstanceSummary>`
-更新实例的名称、配置覆盖、密钥值或默认模型。
+Updates an instance name, configuration overrides, secrets, or default model.
 
 #### `setCurrentInstance(instanceId: string): Promise<void>`
-设置当前使用的实例，并自动同步默认模型。
+Sets the active instance and synchronizes its default model.
 
 #### `getCurrentInstance(): ConfigInstanceSummary | null`
-返回当前实例（脱敏）。
+Returns the active instance (with secrets masked).
 
 #### `setCurrentModel(modelId: string): Promise<void>`
-设置当前实例下次调用时使用的模型。`selectModel` 是其兼容别名。
+Sets the model used for future calls. `selectModel` is an alias for backward compatibility.
 
 #### `getCurrentModel(): string | null`
-返回当前实例选择的模型 ID。
+Returns the currently selected model ID.
 
 #### `getModelConfig(modelId: string, instanceId?: string): Partial<ModelConfig> | null`
-返回指定模型在实例中的配置快照（密钥字段脱敏）。
+Returns a snapshot of the resolved configuration for a specific model within an instance (with secrets redacted).
 
-示例：
+Example:
 
 ```typescript
 await manager.init();
@@ -100,7 +100,7 @@ const instances = manager.listInstances();
 
 const qwenInstance = instances.find(inst => inst.templateId === 'qwen');
 if (!qwenInstance) {
-  throw new Error('没有可用的 Qwen 实例');
+  throw new Error('No Qwen instance available.');
 }
 
 await manager.setCurrentInstance(qwenInstance.id);
@@ -110,7 +110,7 @@ const preview = manager.getModelConfig('qwen-plus');
 console.log(preview);
 ```
 
-常用类型：
+Common types:
 
 ```typescript
 interface ConfigTemplate {
@@ -158,100 +158,100 @@ interface InstanceUpdatePayload {
 }
 ```
 
-### 对话接口
+### Chat Interfaces
 
 #### `chat(options: ChatCompletionOptions, selector?: string | { instanceId?: string; modelId?: string }): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
-统一对话接口。`selector` 参数可以指定模型 ID 或包含实例/模型的选择对象；省略时使用当前实例与模型。
+Unified chat interface. The optional `selector` lets you choose a model ID or specify both instance and model. When omitted, the current instance and model are used.
 
 #### `chatSimple(message: string, selector?: string | { instanceId?: string; modelId?: string }): Promise<string>`
-非流式快捷方法。
+Convenience wrapper for non-streaming calls.
 
 #### `chatStream(message: string, selector?: string | { instanceId?: string; modelId?: string }): AsyncGenerator<string>`
-流式快捷方法。
+Convenience wrapper for streaming responses.
 
 ```typescript
 await manager.setCurrentInstance('openai-default');
 await manager.setCurrentModel('gpt-4o');
 
-const answer = await manager.chatSimple('你好！');
+const answer = await manager.chatSimple('Hello!');
 console.log(answer);
 
-const stream = await manager.chatStream('写一首诗');
+const stream = await manager.chatStream('Write a poem.');
 for await (const chunk of stream) {
   process.stdout.write(chunk);
 }
 ```
 
-`ChatCompletionOptions` 与 `ChatCompletionResponse` 类型见 `src/types.ts`。
+Refer to `src/types.ts` for full definitions of `ChatCompletionOptions` and `ChatCompletionResponse`.
 
-### 其他方法
+### Other Methods
 
 #### `getSupportedProviders(): string[]`
-返回已实现的提供商列表，如 `['openai', 'qwen', ...]`。
+Returns the list of implemented providers, e.g. `['openai', 'qwen', ...]`.
 
 ---
 
-## 安全存储函数
+## Secure Storage Functions
 
 ### `setSecret(key: string, value: string): Promise<void>`
-将敏感信息写入系统密钥链。密钥名称通常来源于实例的 `secretKeys`。如果设置了用户ID，会自动将用户ID编码到密钥名称中以实现用户隔离。
+Writes sensitive information to the system keychain. Secret names normally come from an instance's `secretKeys`. When a user ID is set, the key is automatically scoped to that user.
 
 ### `getSecret(key: string): Promise<string | null>`
-读取密钥值。如果设置了用户ID，会自动使用用户ID来查找对应的密钥。
+Reads a secret value. Honors the current user ID when present.
 
 ### `deleteSecret(key: string): Promise<boolean>`
-删除密钥。如果设置了用户ID，会自动删除该用户对应的密钥。
+Deletes a secret. Scoped to the current user when one is set.
 
 ### `getAllSecrets(): Promise<string[]>`
-列出密钥名称列表。如果设置了用户ID，只返回当前用户的密钥；如果未设置用户ID，返回所有未编码的密钥（向后兼容）。
+Returns the stored secret names. When a user ID is set, only that user's secrets are returned; otherwise the unscoped secrets are listed for backward compatibility.
 
 ### `clearAllSecrets(): Promise<void>`
-清除所有密钥。如果设置了用户ID，只清除当前用户的密钥；如果未设置用户ID，清除所有未编码的密钥。
+Clears all secrets. Behaves similarly to `getAllSecrets()` by respecting user scoping.
 
-> 密钥存储由 `keytar` 提供，具体行为取决于运行平台。
+> Secrets are managed by `keytar`; behavior may vary by platform.
 
 ---
 
-## 用户上下文管理
+## User Context Management
 
-为了支持多用户场景，避免不同用户的密钥相互覆盖，库提供了用户上下文管理功能。设置用户ID后，所有密钥操作都会自动与该用户关联。
+To support multi-user scenarios and prevent key collisions, the library offers user context helpers. Once a user ID is set, all secret operations are automatically scoped.
 
 ### `setCurrentUserId(userId: string): void`
-设置当前用户ID。设置后，所有的密钥操作（存储、获取、删除）都会自动将用户ID编码到密钥名称中，实现用户隔离。
+Sets the current user ID so subsequent secret operations automatically incorporate it.
 
 ```typescript
-import { setCurrentUserId } from 'unillm';
+import { setCurrentUserId } from 'unillm-ts';
 
-// 用户登录时设置用户ID
+// Invoke when a user signs in
 setCurrentUserId('user-12345');
 ```
 
 ### `getCurrentUserId(): string | null`
-获取当前用户ID。如果未设置则返回 `null`。
+Returns the current user ID, or `null` if none is set.
 
 ```typescript
 const userId = getCurrentUserId();
-console.log(`当前用户ID: ${userId}`);
+console.log(`Current user ID: ${userId}`);
 ```
 
 ### `clearCurrentUserId(): void`
-清除当前用户ID，恢复到默认状态（不使用用户隔离）。
+Clears the current user ID, returning to the default unscoped behavior.
 
 ```typescript
-// 用户登出时清除用户ID
+// Clear the user ID when the user signs out
 clearCurrentUserId();
 ```
 
 ### `hasCurrentUserId(): boolean`
-检查是否已设置用户ID。
+Checks whether a user ID is currently set.
 
 ```typescript
 if (hasCurrentUserId()) {
-  console.log('已设置用户上下文');
+  console.log('User context is active.');
 }
 ```
 
-### 多用户使用示例
+### Multi-user Example
 
 ```typescript
 import {
@@ -260,35 +260,35 @@ import {
   setSecret,
   getSecret,
   LLMManager,
-} from 'unillm';
+} from 'unillm-ts';
 
-// 用户A登录
+// User Alice signs in
 setCurrentUserId('user-alice');
 await setSecret('openai_api_key', 'alice-key-123');
 
 const manager = new LLMManager();
 await manager.init();
-// 此时manager会使用用户A的密钥
+// The manager now uses Alice's secrets
 
-// 用户A登出
+// Alice signs out
 clearCurrentUserId();
 
-// 用户B登录
+// User Bob signs in
 setCurrentUserId('user-bob');
 await setSecret('openai_api_key', 'bob-key-456');
-// 用户B的密钥不会覆盖用户A的密钥
+// Bob's secret does not overwrite Alice's
 
-// 获取当前用户的密钥
-const bobKey = await getSecret('openai_api_key'); // 返回 'bob-key-456'
+// Fetch Bob's secret
+const bobKey = await getSecret('openai_api_key'); // 'bob-key-456'
 ```
 
-> **注意**：用户ID的编码格式为 `user:{userId}:{originalKey}`。如果不设置用户ID，密钥操作行为与之前版本保持一致，确保向后兼容。
+> **Note:** Secret keys are encoded as `user:{userId}:{originalKey}` when a user ID is set. Without a user ID, secret operations behave exactly as in previous versions for full backward compatibility.
 
 ---
 
-## 常用类型
+## Frequently Used Types
 
-更多类型定义见 `src/types.ts`，以下为核心接口摘要：
+Additional types are defined in `src/types.ts`. The following snippet highlights the most commonly used interfaces:
 
 ```typescript
 interface ModelConfig {
@@ -328,22 +328,22 @@ interface ChatCompletionResponse {
 
 ---
 
-## 配置数据与目录
+## Configuration Data and Directories
 
-- **静态定义**：
-  - `src/config/models.json` —— 模型信息（不可在运行时修改）
-  - `src/config/templates.json` —— 模板定义（不可在运行时修改）
-- **运行时数据**（默认存放在 `~/.unillm`）：
-  - `instances.json` —— 实例列表
-  - `state.json` —— 当前实例与模型状态
+- **Static definitions**:
+  - `src/config/models.json` — model information (immutable at runtime)
+  - `src/config/templates.json` — template definitions (immutable at runtime)
+- **Runtime data** (stored in `~/.unillm` by default):
+  - `instances.json` — list of configuration instances
+  - `state.json` — current instance and selected model
 
-模板只能在开发阶段修改；运行时只能通过实例和密钥进行定制。
+Templates are intended for development-time changes only. Customize behavior at runtime by creating instances and managing secrets.
 
 ---
 
-## 错误处理
+## Error Handling
 
-建议为涉及网络或密钥的调用编写 `try/catch`：
+Wrap operations that touch the network or secrets in `try/catch` blocks:
 
 ```typescript
 try {
@@ -353,25 +353,25 @@ try {
   const reply = await manager.chatSimple('Hello');
   console.log(reply);
 } catch (error) {
-  console.error('调用失败:', (error as Error).message);
+  console.error('Request failed:', (error as Error).message);
 }
 ```
 
-常见错误：
-- `LLMManager not initialized` —— 忘记调用 `init()`
-- `Configuration instance ... not found` —— 实例不存在
-- `Model ... is not available for instance ...` —— 模型与实例不匹配
-- Provider 相关错误 —— 来自具体服务端
-- `keytar` 相关错误 —— 当前环境不支持安全存储
+Common errors:
+- `LLMManager not initialized` — forgot to call `init()`
+- `Configuration instance ... not found` — instance ID does not exist
+- `Model ... is not available for instance ...` — instance/model mismatch
+- Provider-specific errors — returned by the underlying service
+- `keytar` errors — the current environment does not support secure storage
 
 ---
 
-## 附：密钥命名约定
+## Secret Naming Convention
 
-默认实例的密钥名称格式为 `<实例ID>-<字段名>`，例如：
+Default instance secrets follow the `<instanceId>-<field>` pattern, for example:
 - `openai-default-api_key`
 - `qwen-default-api_key`
 - `qwen-default-access_key_id`
 - `spark-default-api_secret`
 
-自定义实例将使用生成的实例 ID（如 `openai-<uuid>-api_key`）。通过 `ConfigInstanceSummary.secretKeys` 可随时查询对应名称。
+Custom instances use their generated ID (e.g. `openai-<uuid>-api_key`). Inspect `ConfigInstanceSummary.secretKeys` whenever you need to confirm the actual names.

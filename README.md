@@ -1,67 +1,67 @@
 # UniLLM-TS
 
-> 统一的 TypeScript LLM 调用库，支持多个主流大语言模型提供商
+> A unified TypeScript library for calling large language models (LLMs) across multiple providers
 
 [![npm version](https://img.shields.io/npm/v/unillm-ts.svg)](https://www.npmjs.com/package/unillm-ts)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 
-## 特性
+## Features
 
-- 🚀 **轻量级**：无 UI，不依赖外部服务
-- 🔄 **统一接口**：提供一致的对话调用方式
-- 🔌 **可扩展**：支持文本对话，后续可扩展其他数据格式
-- 🔒 **安全存储**：支持加密存储 API Key（使用 keytar）
-- 👥 **多用户支持**：内置用户上下文管理，不同用户的密钥自动隔离
-- 📦 **易集成**：作为 npm 包，一行代码引入
-- ⚙️ **配置管理**：通过模板与实例管理 API Key、模型、超参等
+- 🚀 **Lightweight**: No UI layer and no external service dependencies
+- 🔄 **Unified Interface**: A consistent chat API for every provider
+- 🔌 **Extensible**: Text chat today, ready to expand to other data formats
+- 🔒 **Secure Storage**: Encrypt API keys with keytar
+- 👥 **Multi-user Ready**: Built-in user context management prevents key leakage between users
+- 📦 **Easy Integration**: Install from npm and import with a single line
+- ⚙️ **Config Management**: Use templates and instances to manage API keys, models, and hyperparameters
 
-## 目前计划支持的提供商
+## Providers on the Roadmap
 
 - [ ] OpenAI (GPT-4, GPT-3.5, etc.)
-- [ ] Google（Gemini）
-- [ ] 阿里云通义千问 (Qwen)
-- [ ] 智谱 AI (GLM-4)
+- [ ] Google Gemini
+- [ ] Alibaba Qwen
+- [ ] Zhipu AI (GLM-4)
 - [ ] Moonshot AI (Kimi)
-- [ ] 讯飞星火 (需要 WebSocket 实现)
+- [ ] iFlytek Spark (WebSocket implementation required)
 
 ## Roadmap
-- [ ] 完善架构设计，提供完善的管理、访问接口
-- [ ] 保证访问的稳定性、安全性
-- [ ] 完善对提供方的接入
-- [ ] 支持更多提供商（如百度文心一言、微软 Azure OpenAI 等）
-- [ ] 支持更灵活的API配置、选择和调用方式
-- [ ] 增加更多示例和文档
-- [ ] 支持多模态输入（图片、音频等）
-- [ ] 支持MCP
+- [ ] Finalize the architecture with complete management and access interfaces
+- [ ] Ensure access stability and security
+- [ ] Improve provider integrations
+- [ ] Support more providers (e.g., Baidu ERNIE Bot, Azure OpenAI)
+- [ ] Offer flexible API configuration, selection, and invocation options
+- [ ] Add more examples and documentation
+- [ ] Support multimodal input (images, audio, etc.)
+- [ ] Add MCP support
 
-## 安装
+## Installation
 
 ```bash
 npm install unillm-ts
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 配置 API Keys
+### 1. Configure API Keys
 
-首先，使用安全存储设置您的 API Keys：
+First, securely store your API keys:
 
 ```typescript
 import { setSecret } from 'unillm-ts';
 
-// 存储 API Keys
+// Store API keys
 await setSecret('openai-default-api_key', 'your-openai-key');
 await setSecret('qwen-default-api_key', 'your-qwen-key');
 await setSecret('zhipu-default-api_key', 'your-zhipu-key');
-// 根据模板需求，部分提供商还需要额外字段，例如：
+// Some providers require additional fields, for example:
 // await setSecret('qwen-default-access_key_id', 'your-aliyun-ak');
 // await setSecret('qwen-default-access_key_secret', 'your-aliyun-sk');
 ```
 
-### 2. 查看模板与实例
+### 2. Inspect Templates and Instances
 
-UniLLM-TS 内置所有支持的模型、配置模板以及基于模板生成的默认实例。初始化后可以查看并管理这些实例：
+UniLLM-TS bundles all supported models, configuration templates, and default instances derived from those templates. After initialization you can review and manage them:
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -79,41 +79,41 @@ console.log('Instances:', instances.map(inst => ({
 })));
 ```
 
-每个实例都会给出需要配置的 `secretKeys`（例如 `qwen-default-api_key`）。使用 `setSecret` 写入真实值后即可调用对应提供方。
+Each instance tells you which `secretKeys` must be configured (for example `qwen-default-api_key`). Once you provide the real values with `setSecret`, you can invoke the corresponding provider.
 
-### 3. 使用单例模式（推荐）
+### 3. Use the Singleton (Recommended)
 
 ```typescript
 import llmManager from 'unillm-ts';
 
-// 初始化
+// Initialize
 await llmManager.init();
 
-// 选择实例与模型
+// Select an instance and model
 const instances = llmManager.listInstances();
 const current = instances.find(inst => inst.templateId === 'qwen') ?? instances[0];
 if (!current) {
-  throw new Error('未找到可用的配置实例');
+  throw new Error('No configuration instance found');
 }
 await llmManager.setCurrentInstance(current.id);
 await llmManager.setCurrentModel('qwen-plus');
 
-// 查询支持的模型列表
+// Discover supported models
 const models = llmManager.listModels();
 console.log('Available models:', models);
 
-// 简单对话（非流式）
-const response = await llmManager.chatSimple('你好，请介绍一下自己');
+// Simple (non-streaming) chat
+const response = await llmManager.chatSimple('Hello, introduce yourself.');
 console.log(response);
 
-// 流式对话
-const stream = await llmManager.chatStream('写一首诗');
+// Streaming chat
+const stream = await llmManager.chatStream('Write a poem about spring.');
 for await (const chunk of stream) {
   process.stdout.write(chunk);
 }
 ```
 
-### 4. 使用类实例
+### 4. Work with Class Instances
 
 ```typescript
 import { LLMManager } from 'unillm-ts';
@@ -124,16 +124,16 @@ await manager.init();
 const instances = manager.listInstances();
 const openaiInstance = instances.find(inst => inst.templateId === 'openai');
 if (!openaiInstance) {
-  throw new Error('未找到 OpenAI 配置实例');
+  throw new Error('OpenAI configuration instance not found');
 }
 await manager.setCurrentInstance(openaiInstance.id);
 await manager.setCurrentModel('gpt-4o');
 
-// 高级对话接口
+// Advanced chat interface
 const response = await manager.chat({
   messages: [
-    { role: 'system', content: '你是一个专业的助手' },
-    { role: 'user', content: '请帮我分析一下这段代码' }
+    { role: 'system', content: 'You are a professional assistant.' },
+    { role: 'user', content: 'Please help me review this piece of code.' }
   ],
   temperature: 0.7,
   max_tokens: 1000,
@@ -148,15 +148,15 @@ console.log(response.content);
 console.log('Usage:', response.usage);
 ```
 
-## API 文档
+## API Overview
 
 ### LLMManager
 
 #### `init(): Promise<void>`
 
-初始化管理器，加载内置模型与模板，并从本地 JSON 中读取配置实例。
+Initializes the manager, loads bundled models and templates, and reads configuration instances from the local JSON files.
 
-#### 模型信息
+#### Model Information
 - `listModels(): string[]`
 - `getModelsInfo(): ModelInfo[]`
 - `getSupportedModels(): SupportedModel[]`
@@ -177,7 +177,7 @@ interface ModelInfo {
 }
 ```
 
-#### 模板与实例管理
+#### Template and Instance Management
 - `getConfigTemplates(): ConfigTemplate[]`
 - `createInstanceFromTemplate(templateId: string, options?: InstanceCreationOptions): Promise<ConfigInstanceSummary>`
 - `listInstances(): ConfigInstanceSummary[]`
@@ -189,104 +189,104 @@ interface ModelInfo {
 - `getCurrentModel(): string | null`
 - `getModelConfig(modelId: string, instanceId?: string): Partial<ModelConfig> | null`
 
-#### 对话接口
+#### Chat Interfaces
 - `chat(options: ChatCompletionOptions, selector?: string | { instanceId?: string; modelId?: string }): Promise<ChatCompletionResponse | AsyncGenerator<string>>`
 - `chatSimple(message: string, selector?: string | { instanceId?: string; modelId?: string }): Promise<string>`
 - `chatStream(message: string, selector?: string | { instanceId?: string; modelId?: string }): AsyncGenerator<string>`
 
-#### 其他
+#### Miscellaneous
 - `getSupportedProviders(): string[]`
 
-### 安全存储
+### Secure Storage
 
 #### `setSecret(key: string, value: string): Promise<void>`
 
-存储敏感信息（如 API Key）。如果设置了用户ID，会自动实现用户隔离。
+Stores sensitive data (such as API keys). When a user ID is set, secrets are isolated per user.
 
 #### `getSecret(key: string): Promise<string | null>`
 
-获取存储的敏感信息。如果设置了用户ID，会自动获取该用户的密钥。
+Retrieves a stored secret. Honors the current user ID when present.
 
 #### `deleteSecret(key: string): Promise<boolean>`
 
-删除敏感信息。
+Removes a stored secret.
 
 #### `getAllSecrets(): Promise<string[]>`
 
-获取所有密钥的key列表。如果设置了用户ID，只返回当前用户的密钥。
+Returns every stored secret key. Limited to the current user when one is set.
 
 #### `clearAllSecrets(): Promise<void>`
 
-清除所有密钥。如果设置了用户ID，只清除当前用户的密钥。
+Clears all secrets, scoped to the current user if configured.
 
-### 用户上下文管理
+### User Context Management
 
-对于多用户应用，可以使用用户上下文管理功能来隔离不同用户的密钥：
+Use user context management to isolate secrets in multi-user applications:
 
 #### `setCurrentUserId(userId: string): void`
 
-设置当前用户ID，之后的所有密钥操作都会自动与该用户关联。
+Sets the current user ID so subsequent secret operations are user-scoped.
 
 ```typescript
 import { setCurrentUserId, setSecret } from 'unillm-ts';
 
-// 用户登录时设置用户ID
+// Set the user ID when the user signs in
 setCurrentUserId('user-alice');
 
-// 该密钥会自动与用户alice关联
+// Secrets written afterwards are scoped to Alice
 await setSecret('openai-default-api_key', 'alice-key-123');
 ```
 
 #### `getCurrentUserId(): string | null`
 
-获取当前用户ID。
+Returns the current user ID.
 
 #### `clearCurrentUserId(): void`
 
-清除当前用户ID（通常在用户登出时调用）。
+Clears the current user ID—typically when the user signs out.
 
 #### `hasCurrentUserId(): boolean`
 
-检查是否已设置用户ID。
+Checks whether a user ID is currently set.
 
-**多用户使用场景：**
+**Multi-user example:**
 
 ```typescript
 import { setCurrentUserId, clearCurrentUserId, setSecret, getSecret } from 'unillm-ts';
 
-// 用户A登录
+// User A signs in
 setCurrentUserId('user-alice');
 await setSecret('openai-default-api_key', 'alice-key-123');
 
-// 用户A登出
+// User A signs out
 clearCurrentUserId();
 
-// 用户B登录
+// User B signs in
 setCurrentUserId('user-bob');
 await setSecret('openai-default-api_key', 'bob-key-456');
 
-// 用户B获取密钥（不会获取到用户A的密钥）
-const bobKey = await getSecret('openai-default-api_key'); // 返回 'bob-key-456'
+// User B retrieves their secret (Alice's secret stays isolated)
+const bobKey = await getSecret('openai-default-api_key'); // 'bob-key-456'
 ```
 
-## 配置数据说明
+## Configuration Data
 
-- 模型信息：保存在 `src/config/models.json`，提供模型 ID、参数、数据格式等描述。
-- 模板信息：保存在 `src/config/templates.json`，定义每个提供方的默认配置与所需密钥。
-- 配置实例：运行时保存在用户目录 `~/.unillm/instances.json`，每个实例包含名称、配置覆盖项与 `secretKeys`。
-- 当前状态：当前实例与模型保存在 `~/.unillm/state.json`，便于下次启动时恢复。
+- Model definitions: stored in `src/config/models.json` and include IDs, parameters, and data format metadata.
+- Template definitions: stored in `src/config/templates.json` and define default provider configuration and required secrets.
+- Config instances: persisted at runtime in `~/.unillm/instances.json`, each containing a name, configuration overrides, and `secretKeys`.
+- Current state: the selected instance and model are stored in `~/.unillm/state.json` for automatic restoration.
 
-> 提示：模板仅由开发者提供，构建后无法通过运行时修改模板文件。若需要新增或调整模板，请在发布前更新对应 JSON。
+> Tip: Templates ship with the library and cannot be modified at runtime. To add or adjust templates, update the JSON files before publishing.
 
-## 扩展性
+## Extensibility
 
-库设计为可扩展的，支持：
+The library is designed to be extensible:
 
-1. **添加新的提供商**：实现 `LLMProvider` 抽象类
-2. **多模态输入**：`MessageContent` 接口支持文本、图片、文件等类型
-3. **自定义配置**：配置项支持任意扩展字段
+1. **Add a new provider**: Implement the `LLMProvider` abstract class.
+2. **Support multimodal input**: The `MessageContent` interface supports text, images, files, and more.
+3. **Customize configuration**: Configuration objects accept any extension fields.
 
-### 添加新提供商示例
+### Example: Adding a New Provider
 
 ```typescript
 import { LLMProvider } from 'unillm-ts';
@@ -296,35 +296,34 @@ export class MyCustomProvider extends LLMProvider {
   async chatCompletion(
     options: ChatCompletionOptions
   ): Promise<ChatCompletionResponse | AsyncGenerator<string>> {
-    // 实现您的提供商逻辑
+    // Implement your provider logic here
   }
 }
 ```
 
-## 注意事项
+## Notes
 
-1. **keytar 依赖**：需要系统支持 keytar（可能需要额外的系统库）
-2. **讯飞星火**：目前需要 WebSocket 实现，请参考官方 SDK
-3. **API 密钥安全**：建议使用 `@secret:` 前缀存储敏感信息
+1. **keytar dependency**: Ensure your system supports keytar (extra libraries might be required).
+2. **iFlytek Spark**: Currently requires a WebSocket implementation—refer to the official SDK.
+3. **API key security**: Use the `@secret:` prefix in configuration files to reference secure storage.
 
-## 开发
+## Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 构建
+# Build the project
 npm run build
 
-# 开发模式（watch）
+# Watch mode
 npm run dev
 ```
 
-## 许可证
+## License
 
 MIT
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
-
+Issues and pull requests are always welcome.
