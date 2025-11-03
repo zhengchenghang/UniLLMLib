@@ -1,17 +1,17 @@
-# 示例代码
+# Example Code
 
-这个目录包含了 UniLLM-TS 的使用示例。
+This directory contains usage examples for UniLLM-TS.
 
-## 运行示例
+## Running the Examples
 
-1. 安装依赖：
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. 配置凭证：
-   - **推荐** 设置以下环境变量，示例脚本会自动读取：
+2. Configure credentials:
+   - **Recommended**: set the following environment variables so the scripts can read them automatically:
      - `OPENAI_API_KEY`
      - `QWEN_API_KEY`
      - `QWEN_ACCESS_KEY_ID`
@@ -21,72 +21,72 @@
      - `SPARK_APP_ID`
      - `SPARK_API_KEY`
      - `SPARK_API_SECRET`
-   - 或运行 `npm run examples:setup` 查看各实例缺少的字段并获取写入指引。
+   - Or run `npm run examples:setup` to inspect missing fields for each instance and get instructions on how to populate them.
 
-在某些尚未实现安全存储的平台上，示例会自动回退到 `~/.unillm/examples-secrets.json` 文件保存凭证，该方式仅适用于本地调试，请勿用于生产环境。
+On platforms where secure storage is not available yet, the examples fall back to saving credentials in `~/.unillm/examples-secrets.json`. Use this only for local debugging—do not rely on it in production.
 
-## 示例列表
+## Example List
 
-### 1. basic.ts - 基础使用
+### 1. `basic.ts` – Core usage
 
-演示库的核心功能：
-- 初始化
-- 查询模型列表
-- 选择模型
-- 简单对话
-- 流式对话
-- 高级对话接口
+Demonstrates the key features of the library:
+- Initialization
+- Listing models
+- Model selection
+- Simple chat
+- Streaming chat
+- Advanced chat interface
 
-运行：
+Run it with:
 ```bash
 npm run examples:basic
 ```
 
-### 2. multi-model.ts - 多模型对比
+### 2. `multi-model.ts` – Model comparison
 
-演示如何使用不同的模型回答同一个问题，方便对比各模型的表现。
+Shows how to send the same question to different models to compare their responses.
 
-运行：
+Run it with:
 ```bash
 npm run examples:multi-model
 ```
 
-### 3. conversation.ts - 多轮对话
+### 3. `conversation.ts` – Multi-turn conversations
 
-演示如何维护对话历史，实现多轮对话功能。
+Demonstrates how to maintain conversation history for multi-turn chat experiences.
 
-运行：
+Run it with:
 ```bash
 npm run examples:conversation
 ```
 
-### 4. setup-keys.ts - 凭证配置助手
+### 4. `setup-keys.ts` – Credential helper
 
-帮助你检查当前凭证状态，并给出环境变量或 `setSecret` 写入示例。
+Helps you inspect the current credential status and outputs environment variable samples or `setSecret` usage.
 
-运行：
+Run it with:
 ```bash
 npm run examples:setup
 ```
 
-### 5. multi-user.ts - 多用户隔离
+### 5. `multi-user.ts` – User isolation
 
-演示如何使用用户上下文管理功能来隔离不同用户的密钥，适用于多用户应用场景。
+Shows how to isolate secrets for different users using the user context helpers—ideal for multi-tenant applications.
 
-运行：
+Run it with:
 ```bash
 npm run examples:multi-user
 ```
 
-你也可以一次性运行所有示例（除凭证检查外）：
+You can also run all examples (except credential inspection) in one go:
 
 ```bash
 npm run examples:all
 ```
 
-## 自定义示例
+## Create Your Own Example
 
-你可以基于这些示例创建自己的应用：
+Feel free to build on these scripts:
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -94,21 +94,21 @@ import llmManager from 'unillm-ts';
 async function myApp() {
   await llmManager.init();
   
-  // 你的代码...
+  // Your code here...
 }
 
 myApp();
 ```
 
-## 注意事项
+## Notes
 
-1. **API Key 安全**: 不要在代码中硬编码 API Key
-2. **错误处理**: 生产环境中应该添加完善的错误处理
-3. **Rate Limiting**: 注意各提供商的 API 调用频率限制
-4. **成本控制**: 注意 Token 使用量和费用
+1. **API key security**: never hard-code API keys in source code.
+2. **Error handling**: add robust error handling in production scenarios.
+3. **Rate limiting**: respect the rate limits of each provider.
+4. **Cost management**: monitor token usage and associated costs.
 
-## 更多资源
+## More Resources
 
-- [完整文档](../README.md)
-- [API 参考](../API.md)
-- [快速开始](../QUICKSTART.md)
+- [Full documentation](../README.md)
+- [API reference](../API.md)
+- [Quick start guide](../QUICKSTART.md)

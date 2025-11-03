@@ -1,18 +1,18 @@
-# 安装说明
+# Installation Guide
 
-## 基础安装
+## Basic Installation
 
 ```bash
 npm install unillm-ts
 ```
 
-## Keytar 依赖
+## Keytar Dependency
 
-本库使用 `keytar` 进行 API Key 的安全存储。在某些平台上，keytar 需要额外的系统依赖。
+The library uses `keytar` to store API keys securely. Some platforms require extra system packages before keytar can be installed.
 
 ### Windows
 
-需要安装 Visual Studio Build Tools：
+Install the Visual Studio Build Tools:
 
 ```bash
 npm install --global windows-build-tools
@@ -20,18 +20,18 @@ npm install --global windows-build-tools
 
 ### macOS
 
-通常无需额外配置。
+No additional configuration is typically required.
 
 ### Linux
 
-需要安装 libsecret：
+Install `libsecret`:
 
-#### Ubuntu/Debian
+#### Ubuntu / Debian
 ```bash
 sudo apt-get install libsecret-1-dev
 ```
 
-#### Red Hat/Fedora
+#### Red Hat / Fedora
 ```bash
 sudo yum install libsecret-devel
 ```
@@ -41,21 +41,21 @@ sudo yum install libsecret-devel
 sudo pacman -S libsecret
 ```
 
-## 可选：不使用 Keytar
+## Optional: Working Without Keytar
 
-如果您的环境不支持 keytar，可以：
+If keytar is not available in your environment, consider these alternatives:
 
-1. **使用环境变量初始化密钥**：
+1. **Initialize secrets from environment variables**:
    ```typescript
    import { setSecret } from 'unillm-ts';
 
    await setSecret('openai-default-api_key', process.env.OPENAI_API_KEY ?? '');
    ```
-2. **自定义密钥管理**：扩展或替换 `src/secrets.ts`，将密钥读写重定向到环境变量、文件或云密钥服务。
+2. **Customize secret management**: extend or replace `src/secrets.ts` to redirect secret storage to environment variables, files, or a cloud secret manager.
 
-> 注意：请避免在代码仓库中保存明文密钥。
+> Note: Never commit plaintext secrets to your repository.
 
-## 验证安装
+## Verify the Installation
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -68,29 +68,28 @@ async function test() {
 test();
 ```
 
-## 常见问题
+## FAQ
 
-### Q: keytar 安装失败怎么办？
+### Q: What should I do if keytar fails to install?
 
-A: 如果 keytar 安装失败，您可以：
-1. 检查系统依赖是否已安装
-2. 使用环境变量或明文配置（仅开发环境）
-3. 联系系统管理员获取帮助
+A: Try the following steps:
+1. Ensure the required system dependencies are installed.
+2. Use environment variables or temporary plaintext configuration during development only.
+3. Ask your system administrator for assistance.
 
-### Q: 如何在 Docker 中使用？
+### Q: How do I use the library inside Docker?
 
-A: 在 Docker 容器中，推荐使用环境变量而非 keytar：
+A: In Docker containers we recommend using environment variables instead of keytar:
 
 ```dockerfile
 FROM node:20
 ENV OPENAI_API_KEY=your-key
-# ... 其他配置
+# ... other configuration
 ```
 
-### Q: 可以使用其他密钥管理方案吗？
+### Q: Can I use another secret management solution?
 
-A: 可以。您可以：
-1. 扩展 `secrets.ts` 实现自己的密钥管理
-2. 使用 AWS Secrets Manager、Azure Key Vault 等云服务
-3. 直接在代码中配置（需修改 ModelConfig）
-
+A: Yes. You can:
+1. Extend `secrets.ts` to implement your own storage backend.
+2. Integrate with AWS Secrets Manager, Azure Key Vault, or similar services.
+3. Hard-code values in your configuration (not recommended for production; requires modifying `ModelConfig`).

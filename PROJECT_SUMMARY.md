@@ -1,128 +1,128 @@
-# UniLLM-TS 项目总结
+# UniLLM-TS Project Summary
 
-## 项目概述
+## Overview
 
-UniLLM-TS 是一个统一的 TypeScript LLM 调用库，旨在为开发者提供简单、一致的接口来调用多个大语言模型提供商的 API。
+UniLLM-TS is a unified TypeScript library for calling large language models (LLMs). It provides a simple, consistent interface for developers to integrate multiple LLM providers.
 
-## 已完成功能
+## Completed Features
 
-### ✅ 核心功能
+### ✅ Core Capabilities
 
-1. **统一的管理接口**
-   - `LLMManager` 核心类
-   - 初始化和配置管理
-   - 模型选择和切换
-   - 配置查询
+1. **Unified management interface**
+   - `LLMManager` core class
+   - Initialization and configuration management
+   - Model selection and switching
+   - Configuration inspection
 
-2. **多提供商支持**
+2. **Multi-provider support**
    - OpenAI (GPT-4, GPT-3.5)
-   - 阿里云通义千问 (Qwen)
-   - 智谱 AI (GLM-4)
+   - Alibaba Qwen
+   - Zhipu AI (GLM-4)
    - Moonshot AI (Kimi)
-   - 讯飞星火 (框架已搭建，需完善 WebSocket)
+   - iFlytek Spark (framework prepared, WebSocket implementation pending)
 
-3. **统一对话接口**
-   - `chat()` - 高级对话接口
-   - `chatSimple()` - 简化非流式对话
-   - `chatStream()` - 简化流式对话
-   - 支持流式和非流式响应
-   - 支持多轮对话
+3. **Unified chat interfaces**
+   - `chat()` – advanced chat
+   - `chatSimple()` – simplified non-streaming chat
+   - `chatStream()` – simplified streaming chat
+   - Supports streaming and non-streaming responses
+   - Supports multi-turn conversations
 
-4. **安全存储**
-   - 基于 keytar 的安全密钥存储
-   - 配置文件 `@secret:` 语法支持
-   - API Key 脱敏显示
+4. **Secure storage**
+   - Keytar-based secret storage
+   - `@secret:` syntax in configuration files
+   - Masked display of API keys
 
-5. **配置管理**
-   - 模型与模板静态 JSON 定义
-   - 通过模板创建可自定义的配置实例
-   - 默认实例 + 当前状态持久化到 `~/.unillm`
-   - 支持在运行时更新实例和密钥
+5. **Configuration management**
+   - Static JSON definitions for models and templates
+   - Create configurable instances from templates
+   - Default instances and current state persisted to `~/.unillm`
+   - Runtime updates to instances and secrets
 
-### ✅ 类型系统
+### ✅ Type System
 
-完整的 TypeScript 类型定义：
-- `ModelConfig` - Provider 调用配置
-- `SupportedModel` / `ModelInfo` - 模型描述信息
-- `ConfigTemplate` / `TemplateSecretField` - 模板定义
-- `ConfigInstance` / `ConfigInstanceSummary` - 配置实例数据结构
-- `InstanceCreationOptions` / `InstanceUpdatePayload` - 实例管理输入
-- `Message` / `MessageContent` - 消息格式
-- `ChatCompletionOptions` / `ChatCompletionResponse` - 对话输入输出
+Comprehensive TypeScript definitions:
+- `ModelConfig` – provider configuration
+- `SupportedModel` / `ModelInfo` – model metadata
+- `ConfigTemplate` / `TemplateSecretField` – template definitions
+- `ConfigInstance` / `ConfigInstanceSummary` – instance data structures
+- `InstanceCreationOptions` / `InstanceUpdatePayload` – instance management inputs
+- `Message` / `MessageContent` – message formats
+- `ChatCompletionOptions` / `ChatCompletionResponse` – chat input and output
 
-### ✅ 文档
+### ✅ Documentation
 
-1. **用户文档**
-   - README.md - 主文档和功能介绍
-   - QUICKSTART.md - 5 分钟快速开始
-   - API.md - 完整 API 参考
-   - INSTALL.md - 安装和环境配置
+1. **User documentation**
+   - README.md – primary guide
+   - QUICKSTART.md – five-minute quick start
+   - API.md – full API reference
+   - INSTALL.md – installation and environment setup
 
-2. **开发文档**
-   - STRUCTURE.md - 项目结构说明
-   - CONTRIBUTING.md - 贡献指南
-   - CHANGELOG.md - 版本更新记录
+2. **Developer documentation**
+   - STRUCTURE.md – project structure overview
+   - CONTRIBUTING.md – contribution guidelines
+   - CHANGELOG.md – release history
 
-3. **示例代码**
-   - basic.ts - 基础使用
-   - multi-model.ts - 多模型对比
-   - conversation.ts - 多轮对话
-   - examples/README.md - 示例说明
+3. **Example code**
+   - `basic.ts` – basic usage
+   - `multi-model.ts` – compare responses across models
+   - `conversation.ts` – multi-turn conversation
+   - `examples/README.md` – example instructions
 
-### ✅ 构建配置
+### ✅ Build Configuration
 
-1. **TypeScript 配置**
-   - tsconfig.json - 完整的编译配置
-   - 支持 ES2020
-   - 生成类型声明文件
+1. **TypeScript setup**
+   - `tsconfig.json` – full compiler configuration
+   - ES2020 target
+   - Emits declaration files
 
-2. **包管理**
-   - package.json - npm 包配置
-   - 依赖管理
-   - 构建脚本
-   - 发布配置
+2. **Package management**
+   - `package.json` – npm configuration
+   - Dependency management
+   - Build scripts
+   - Publish configuration
 
-3. **其他配置**
-   - .gitignore - Git 忽略规则
-   - .npmignore - npm 发布忽略规则
-   - LICENSE - MIT 许可证
+3. **Other configuration**
+   - `.gitignore` – Git ignore rules
+  - `.npmignore` – npm publish ignore rules
+   - LICENSE – MIT license
 
-## 技术特点
+## Technical Highlights
 
-### 轻量级设计
-- 无 UI 依赖
-- 不依赖外部服务
-- 最小化依赖包
-- 运行时仅依赖 `keytar`（可选）
+### Lightweight design
+- No UI dependencies
+- No external service requirements
+- Minimal dependency footprint
+- Runtime dependency limited to `keytar` (optional)
 
-### 统一接口
-- 所有提供商使用相同的调用方式
-- 一致的参数格式
-- 统一的错误处理
-- 透明的 Provider 切换
+### Unified interface
+- Consistent API across providers
+- Unified parameter formats
+- Centralized error handling
+- Transparent provider switching
 
-### 可扩展性
-- 抽象基类设计
-- 插件式 Provider 架构
-- 支持自定义 Provider
-- 可扩展的消息格式
-- 配置灵活可扩展
+### Extensibility
+- Abstract base class architecture
+- Pluggable provider design
+- Support for custom providers
+- Extendable message formats
+- Flexible configuration options
 
-### 类型安全
-- 完整的 TypeScript 支持
-- 严格的类型检查
-- 智能代码提示
-- 编译时错误检测
+### Type safety
+- Full TypeScript support
+- Strict type checking
+- Rich IntelliSense hints
+- Compile-time validation
 
-### 安全性
-- keytar 系统密钥链集成
-- 配置中的密钥引用机制
-- API Key 脱敏显示
-- 支持环境变量
+### Security
+- Keytar integration with system keychain
+- Secret placeholders inside configuration
+- Masked display of sensitive keys
+- Environment variable support
 
-## 使用示例
+## Usage Examples
 
-### 基础使用
+### Basic Usage
 
 ```typescript
 import llmManager from 'unillm-ts';
@@ -132,17 +132,17 @@ await llmManager.init();
 const instances = llmManager.listInstances();
 const qwenInstance = instances.find(inst => inst.templateId === 'qwen');
 if (!qwenInstance) {
-  throw new Error('未找到 Qwen 实例');
+  throw new Error('Qwen instance not found.');
 }
 
 await llmManager.setCurrentInstance(qwenInstance.id);
 await llmManager.setCurrentModel('qwen-plus');
 
-const response = await llmManager.chatSimple('你好');
+const response = await llmManager.chatSimple('Hello there!');
 console.log(response);
 ```
 
-### 高级用法
+### Advanced Usage
 
 ```typescript
 import { LLMManager } from 'unillm-ts';
@@ -153,15 +153,15 @@ await manager.init();
 const instances = manager.listInstances();
 const openai = instances.find(inst => inst.templateId === 'openai');
 if (!openai) {
-  throw new Error('未找到 OpenAI 实例');
+  throw new Error('OpenAI instance not found.');
 }
 await manager.setCurrentInstance(openai.id);
 await manager.setCurrentModel('gpt-4o');
 
 const response = await manager.chat({
   messages: [
-    { role: 'system', content: '你是一个专业助手' },
-    { role: 'user', content: '问题' }
+    { role: 'system', content: 'You are a professional assistant.' },
+    { role: 'user', content: 'Please review this question.' }
   ],
   temperature: 0.7,
   max_tokens: 1000,
@@ -169,161 +169,160 @@ const response = await manager.chat({
 });
 ```
 
-### 流式对话
+### Streaming Chat
 
 ```typescript
-const stream = await llmManager.chatStream('写一首诗');
+const stream = await llmManager.chatStream('Write a short poem.');
 for await (const chunk of stream) {
   process.stdout.write(chunk);
 }
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 UniLLM-TS-Lib/
-├── src/                      # 源代码
-│   ├── index.ts             # 入口
-│   ├── manager.ts           # 管理器
-│   ├── types.ts             # 类型定义
-│   ├── secrets.ts           # 安全存储
-│   ├── config/              # 配置
-│   └── providers/           # 提供商实现
-├── examples/                 # 示例代码
-├── dist/                    # 编译输出
-├── *.md                     # 文档
-└── 配置文件
+├── src/                      # Source code
+│   ├── index.ts             # Entry point
+│   ├── manager.ts           # Manager implementation
+│   ├── types.ts             # Type definitions
+│   ├── secrets.ts           # Secure storage utilities
+│   ├── config/              # Static configuration
+│   └── providers/           # Provider implementations
+├── examples/                 # Example scripts
+├── dist/                    # Build output
+├── *.md                     # Documentation files
+└── Configuration files
 ```
 
-## 已实现的 API
+## Implemented APIs
 
-### LLMManager 类
+### `LLMManager`
 
-| 方法 | 功能 | 状态 |
-|------|------|------|
-| `init()` | 初始化管理器 | ✅ |
-| `getConfigTemplates()` | 获取模板列表 | ✅ |
-| `createInstanceFromTemplate()` | 创建配置实例 | ✅ |
-| `listInstances()` | 列出实例 | ✅ |
-| `setCurrentInstance()` | 设置当前实例 | ✅ |
-| `getCurrentInstance()` | 获取当前实例 | ✅ |
-| `setCurrentModel()` | 设置当前模型 | ✅ |
-| `getCurrentModel()` | 获取当前模型 | ✅ |
-| `listModels()` | 获取模型 ID 列表 | ✅ |
-| `getModelsInfo()` | 获取模型详细信息 | ✅ |
-| `getModelConfig()` | 获取实例化配置 | ✅ |
-| `chat()` | 统一对话接口 | ✅ |
-| `chatSimple()` | 简化对话 | ✅ |
-| `chatStream()` | 流式对话 | ✅ |
-| `getSupportedProviders()` | 获取支持的提供商 | ✅ |
+| Method | Description | Status |
+|--------|-------------|--------|
+| `init()` | Initialize the manager | ✅ |
+| `getConfigTemplates()` | Retrieve template list | ✅ |
+| `createInstanceFromTemplate()` | Create a configuration instance | ✅ |
+| `listInstances()` | List all instances | ✅ |
+| `setCurrentInstance()` | Select the active instance | ✅ |
+| `getCurrentInstance()` | Fetch the active instance | ✅ |
+| `setCurrentModel()` | Select the active model | ✅ |
+| `getCurrentModel()` | Retrieve the active model | ✅ |
+| `listModels()` | List model IDs | ✅ |
+| `getModelsInfo()` | Fetch detailed model information | ✅ |
+| `getModelConfig()` | Retrieve resolved configuration | ✅ |
+| `chat()` | Unified chat interface | ✅ |
+| `chatSimple()` | Simplified chat | ✅ |
+| `chatStream()` | Streaming chat | ✅ |
+| `getSupportedProviders()` | List supported providers | ✅ |
 
-### 安全存储
+### Secure Storage
 
-| 函数 | 功能 | 状态 |
-|------|------|------|
-| `setSecret()` | 存储密钥 | ✅ |
-| `getSecret()` | 获取密钥 | ✅ |
-| `resolveValue()` | 解析配置引用 | ✅ |
+| Function | Description | Status |
+|----------|-------------|--------|
+| `setSecret()` | Store a secret | ✅ |
+| `getSecret()` | Retrieve a secret | ✅ |
+| `resolveValue()` | Resolve configuration placeholders | ✅ |
 
-## Provider 实现状态
+## Provider Implementation Status
 
-| Provider | 非流式 | 流式 | 状态 |
-|----------|--------|------|------|
-| OpenAI | ✅ | ✅ | 完成 |
-| Qwen | ✅ | ✅ | 完成 |
-| ZhiPu | ✅ | ✅ | 完成 |
-| Moonshot | ✅ | ✅ | 完成 |
-| Spark | ⚠️ | ⚠️ | 需完善 WebSocket |
+| Provider | Non-streaming | Streaming | Status |
+|----------|---------------|-----------|--------|
+| OpenAI | ✅ | ✅ | Complete |
+| Qwen | ✅ | ✅ | Complete |
+| ZhiPu | ✅ | ✅ | Complete |
+| Moonshot | ✅ | ✅ | Complete |
+| Spark | ⚠️ | ⚠️ | WebSocket work pending |
 
-## 下一步计划
+## Next Steps
 
-### 短期目标
-1. 完善讯飞星火的 WebSocket 实现
-2. 添加单元测试
-3. 添加更多错误处理和重试机制
-4. 完善日志系统
+### Short-term Goals
+1. Finish the iFlytek Spark WebSocket integration
+2. Add unit tests
+3. Improve error handling and retry logic
+4. Expand logging capabilities
 
-### 中期目标
-1. 添加更多 LLM 提供商
-2. 支持多模态输入（图片、音频）
-3. 添加流式响应优化
-4. 性能优化
+### Mid-term Goals
+1. Support additional LLM providers
+2. Add multimodal input (images, audio)
+3. Optimize streaming performance
+4. Improve overall performance
 
-### 长期目标
-1. 支持插件系统
-2. 支持自定义中间件
-3. 添加监控和分析功能
-4. 云服务集成
+### Long-term Goals
+1. Plugin system support
+2. Custom middleware support
+3. Monitoring and analytics
+4. Cloud service integrations
 
-## 如何开始
+## Getting Started
 
-### 作为库使用
+### As a consumer
 
 ```bash
-# 安装
+# Install
 npm install unillm-ts
 
-# 使用
+# Use
 import llmManager from 'unillm-ts';
 await llmManager.init();
 ```
 
-### 作为开发者
+### As a contributor
 
 ```bash
-# 克隆仓库
+# Clone the repository
 git clone <repo-url>
 cd UniLLM-TS-Lib
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 开发模式
+# Development mode
 npm run dev
 
-# 构建
+# Build
 npm run build
 ```
 
-## 依赖清单
+## Dependencies
 
-### 运行时依赖
-- `keytar`: ^7.9.0 - 系统密钥链（可选）
+### Runtime
+- `keytar`: ^7.9.0 – optional system keychain integration
 
-### 开发依赖
-- `typescript`: ^5.0.0 - TypeScript 编译器
-- `@types/node`: ^20.0.0 - Node.js 类型
-- `ts-node`: ^10.9.0 - 示例运行工具
+### Development
+- `typescript`: ^5.0.0 – TypeScript compiler
+- `@types/node`: ^20.0.0 – Node.js type definitions
+- `ts-node`: ^10.9.0 – Run TypeScript examples
 
-## 许可证
+## License
 
-MIT License - 开源免费使用
+MIT License – open source and free to use.
 
-## 贡献
+## Contributing
 
-欢迎贡献！请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)
+Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## 文档导航
+## Documentation Map
 
-- [README.md](./README.md) - 主文档
-- [QUICKSTART.md](./QUICKSTART.md) - 快速开始
-- [API.md](./API.md) - API 参考
-- [INSTALL.md](./INSTALL.md) - 安装说明
-- [STRUCTURE.md](./STRUCTURE.md) - 项目结构
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - 贡献指南
-- [CHANGELOG.md](./CHANGELOG.md) - 更新日志
+- [README.md](./README.md) – main guide
+- [QUICKSTART.md](./QUICKSTART.md) – quick start
+- [API.md](./API.md) – API reference
+- [INSTALL.md](./INSTALL.md) – installation guide
+- [STRUCTURE.md](./STRUCTURE.md) – project structure
+- [CONTRIBUTING.md](./CONTRIBUTING.md) – contributing guide
+- [CHANGELOG.md](./CHANGELOG.md) – release history
 
-## 总结
+## Summary
 
-UniLLM-TS 是一个功能完整、设计优雅、易于使用的 TypeScript LLM 调用库。它提供了：
+UniLLM-TS is a feature-complete, well-designed, and easy-to-use TypeScript library for working with large language models. It offers:
 
-✅ 统一的接口调用多个 LLM 提供商  
-✅ 安全的 API Key 管理  
-✅ 完整的 TypeScript 类型支持  
-✅ 流式和非流式响应支持  
-✅ 灵活的配置管理  
-✅ 详尽的文档和示例  
-✅ 可扩展的架构设计  
+✅ A unified interface for multiple LLM providers  
+✅ Secure API key management  
+✅ Comprehensive TypeScript support  
+✅ Streaming and non-streaming responses  
+✅ Flexible configuration management  
+✅ Detailed documentation and examples  
+✅ An extensible architecture
 
-项目已经具备了作为独立 npm 包发布的所有要素，可以立即投入使用或进一步开发。
-
+The project is ready for use as an npm package and provides a solid foundation for further development.
