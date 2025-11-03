@@ -28,7 +28,8 @@
     "examples:basic": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/basic.ts",
     "examples:conversation": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/conversation.ts",
     "examples:multi-model": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-model.ts",
-    "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model"
+    "examples:multi-user": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-user.ts",
+    "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model && npm run examples:multi-user"
   },
   "keywords": [
     "llm",

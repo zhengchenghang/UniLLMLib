@@ -194,18 +194,95 @@ for await (const chunk of stream) {
 ## 安全存储函数
 
 ### `setSecret(key: string, value: string): Promise<void>`
-将敏感信息写入系统密钥链。密钥名称通常来源于实例的 `secretKeys`。
+将敏感信息写入系统密钥链。密钥名称通常来源于实例的 `secretKeys`。如果设置了用户ID，会自动将用户ID编码到密钥名称中以实现用户隔离。
 
 ### `getSecret(key: string): Promise<string | null>`
-读取密钥值。
+读取密钥值。如果设置了用户ID，会自动使用用户ID来查找对应的密钥。
 
 ### `deleteSecret(key: string): Promise<boolean>`
-删除密钥。
+删除密钥。如果设置了用户ID，会自动删除该用户对应的密钥。
 
 ### `getAllSecrets(): Promise<string[]>`
-列出当前服务下保存的所有密钥名称。
+列出密钥名称列表。如果设置了用户ID，只返回当前用户的密钥；如果未设置用户ID，返回所有未编码的密钥（向后兼容）。
 
-> 秘钥存储由 `keytar` 提供，具体行为取决于运行平台。
+### `clearAllSecrets(): Promise<void>`
+清除所有密钥。如果设置了用户ID，只清除当前用户的密钥；如果未设置用户ID，清除所有未编码的密钥。
+
+> 密钥存储由 `keytar` 提供，具体行为取决于运行平台。
+
+---
+
+## 用户上下文管理
+
+为了支持多用户场景，避免不同用户的密钥相互覆盖，库提供了用户上下文管理功能。设置用户ID后，所有密钥操作都会自动与该用户关联。
+
+### `setCurrentUserId(userId: string): void`
+设置当前用户ID。设置后，所有的密钥操作（存储、获取、删除）都会自动将用户ID编码到密钥名称中，实现用户隔离。
+
+```typescript
+import { setCurrentUserId } from 'unillm';
+
+// 用户登录时设置用户ID
+setCurrentUserId('user-12345');
+```
+
+### `getCurrentUserId(): string | null`
+获取当前用户ID。如果未设置则返回 `null`。
+
+```typescript
+const userId = getCurrentUserId();
+console.log(`当前用户ID: ${userId}`);
+```
+
+### `clearCurrentUserId(): void`
+清除当前用户ID，恢复到默认状态（不使用用户隔离）。
+
+```typescript
+// 用户登出时清除用户ID
+clearCurrentUserId();
+```
+
+### `hasCurrentUserId(): boolean`
+检查是否已设置用户ID。
+
+```typescript
+if (hasCurrentUserId()) {
+  console.log('已设置用户上下文');
+}
+```
+
+### 多用户使用示例
+
+```typescript
+import {
+  setCurrentUserId,
+  clearCurrentUserId,
+  setSecret,
+  getSecret,
+  LLMManager,
+} from 'unillm';
+
+// 用户A登录
+setCurrentUserId('user-alice');
+await setSecret('openai_api_key', 'alice-key-123');
+
+const manager = new LLMManager();
+await manager.init();
+// 此时manager会使用用户A的密钥
+
+// 用户A登出
+clearCurrentUserId();
+
+// 用户B登录
+setCurrentUserId('user-bob');
+await setSecret('openai_api_key', 'bob-key-456');
+// 用户B的密钥不会覆盖用户A的密钥
+
+// 获取当前用户的密钥
+const bobKey = await getSecret('openai_api_key'); // 返回 'bob-key-456'
+```
+
+> **注意**：用户ID的编码格式为 `user:{userId}:{originalKey}`。如果不设置用户ID，密钥操作行为与之前版本保持一致，确保向后兼容。
 
 ---
 

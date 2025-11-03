@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- 用户上下文管理功能，支持多用户场景下的密钥隔离
+- `setCurrentUserId()` - 设置当前用户ID
+- `getCurrentUserId()` - 获取当前用户ID
+- `clearCurrentUserId()` - 清除当前用户ID
+- `hasCurrentUserId()` - 检查是否已设置用户ID
+- `getAllSecrets()` - 获取所有密钥列表（支持用户隔离）
+- `clearAllSecrets()` - 清除所有密钥（支持用户隔离）
+- 新增多用户使用示例 `examples/multi-user.ts`
+
+### Changed
+- `setSecret()` / `getSecret()` / `deleteSecret()` 现在支持用户隔离，设置用户ID后会自动将用户ID编码到密钥名称中
+- 更新API文档，添加用户上下文管理部分
+- 更新README，添加多用户功能说明
+
 ## [1.0.0] - 2024-10-23
 
 ### Added
