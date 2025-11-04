@@ -29,7 +29,7 @@ export class StorageFactory {
           storage = new LinuxStorage();
           break;
         case Platform.ANDROID:
-          storage = new AndroidStorage();
+          storage = new AndroidStorage(serviceName);
           break;
         case Platform.IOS:
           storage = new IOSStorage();
