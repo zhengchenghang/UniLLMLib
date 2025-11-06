@@ -11,7 +11,7 @@
 - 🚀 **Lightweight**: No UI layer and no external service dependencies
 - 🔄 **Unified Interface**: A consistent chat API for every provider
 - 🔌 **Extensible**: Text chat today, ready to expand to other data formats
-- 🔒 **Secure Storage**: Encrypt API keys with keytar
+- 🔒 **Secure Storage**: Encrypt API keys with keytar (desktop) and react-native-keychain (mobile)
 - 👥 **Multi-user Ready**: Built-in user context management prevents key leakage between users
 - 📦 **Easy Integration**: Install from npm and import with a single line
 - ⚙️ **Config Management**: Use templates and instances to manage API keys, models, and hyperparameters
@@ -37,9 +37,29 @@
 
 ## Installation
 
+### For Node.js/Desktop Applications
+
 ```bash
 npm install unillm-ts
 ```
+
+### For React Native Applications
+
+```bash
+npm install unillm-ts react-native-keychain
+
+# iOS setup
+cd ios && pod install && cd ..
+```
+
+### Platform-Specific Setup
+
+- **Desktop (Windows/macOS/Linux)**: Uses `keytar` for secure storage
+- **iOS**: Uses `react-native-keychain` with iOS Keychain
+- **Android**: Uses `react-native-keychain` with Android Keystore
+- **Web**: Uses browser's secure storage (when available)
+
+For detailed iOS setup instructions, see [iOS Keychain Storage](docs/ios-keychain-storage.md).
 
 ## Quick Start
 
