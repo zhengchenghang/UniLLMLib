@@ -29,7 +29,8 @@
     "examples:conversation": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/conversation.ts",
     "examples:multi-model": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-model.ts",
     "examples:multi-user": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-user.ts",
-    "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model && npm run examples:multi-user"
+    "examples:ios-keychain": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/ios-keychain-storage.ts",
+    "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model && npm run examples:multi-user && npm run examples:ios-keychain"
   },
   "keywords": [
     "llm",
@@ -42,12 +43,18 @@
     "chatgpt",
     "ai",
     "typescript",
-    "rollup"
+    "rollup",
+    "react-native",
+    "ios",
+    "android",
+    "keychain",
+    "secure-storage"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "keytar": "^7.9.0"
+    "keytar": "^7.9.0",
+    "react-native-keychain": "^8.1.3"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
