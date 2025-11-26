@@ -54,12 +54,16 @@ cd ios && pod install && cd ..
 
 ### Platform-Specific Setup
 
-- **Desktop (Windows/macOS/Linux)**: Uses `keytar` for secure storage
+- **Windows**: Uses `keytar` with Windows Credential Manager
+- **macOS**: Uses `keytar` with macOS Keychain (implementation in progress)
+- **Linux**: Uses `libsecret` (GNOME Keyring/KDE Wallet) with encrypted file fallback
 - **iOS**: Uses `react-native-keychain` with iOS Keychain
 - **Android**: Uses `react-native-keychain` with Android Keystore
 - **Web**: Uses browser's secure storage (when available)
 
-For detailed iOS setup instructions, see [iOS Keychain Storage](docs/ios-keychain-storage.md).
+For detailed setup instructions:
+- [iOS Keychain Storage](docs/ios-keychain-storage.md)
+- [Linux Secure Storage](docs/linux-storage.md)
 
 ## Quick Start
 

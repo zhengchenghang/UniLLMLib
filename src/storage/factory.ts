@@ -2,7 +2,7 @@
 import { SecureStorageInterface } from './interface';
 import { WindowsStorage } from './windows';
 import { MacOSStorage } from './other-platforms';
-import { LinuxStorage } from './other-platforms';
+import { LinuxStorage } from './linux';
 import { AndroidStorage } from './other-platforms';
 import { IOSStorage } from './other-platforms';
 import { WebStorage } from './other-platforms';
@@ -26,7 +26,7 @@ export class StorageFactory {
           storage = new MacOSStorage();
           break;
         case Platform.LINUX:
-          storage = new LinuxStorage();
+          storage = new LinuxStorage(serviceName);
           break;
         case Platform.ANDROID:
           storage = new AndroidStorage(serviceName);

@@ -30,6 +30,8 @@
     "examples:multi-model": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-model.ts",
     "examples:multi-user": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/multi-user.ts",
     "examples:ios-keychain": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/ios-keychain-storage.ts",
+    "examples:linux-storage": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/linux-storage.ts",
+    "test:linux-storage": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" examples/test-linux-storage.ts",
     "examples:all": "npm run examples:basic && npm run examples:conversation && npm run examples:multi-model && npm run examples:multi-user && npm run examples:ios-keychain"
   },
   "keywords": [
