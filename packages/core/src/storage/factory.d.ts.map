@@ -1,0 +1,1 @@
+{"version":3,"file":"factory.d.ts","sourceRoot":"","sources":["factory.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,sBAAsB,EAAE,MAAM,aAAa,CAAC;AASrD,qBAAa,cAAc;IACzB,OAAO,CAAC,MAAM,CAAC,SAAS,CAAkD;IAE1E,MAAM,CAAC,UAAU,CAAC,WAAW,GAAE,MAAiB,GAAG,sBAAsB;CAoC1E"}

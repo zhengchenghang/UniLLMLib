@@ -1,0 +1,17 @@
+{
+  "name": "@unillm-ts/web",
+  "version": "1.0.0",
+  "description": "Web frontend for unillm-ts (Coming Soon)",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Web package coming soon...'",
+    "build": "echo 'Web package coming soon...'"
+  },
+  "keywords": [
+    "llm",
+    "web",
+    "frontend"
+  ],
+  "author": "",
+  "license": "MIT"
+}

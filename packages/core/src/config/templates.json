@@ -1,0 +1,137 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "provider": "openai",
+    "description": "OpenAI REST API template covering GPT models.",
+    "modelIds": ["gpt-4o"],
+    "defaultConfig": {
+      "base_url": "https://api.openai.com/v1",
+      "timeout": 60000
+    },
+    "secretFields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "OpenAI API Key",
+        "required": true
+      }
+    ],
+    "defaultInstance": {
+      "name": "OpenAI 默认实例",
+      "selectedModelId": "gpt-4o"
+    }
+  },
+  {
+    "id": "qwen",
+    "name": "Qwen",
+    "provider": "qwen",
+    "description": "Aliyun DashScope Qwen API template.",
+    "modelIds": ["qwen-plus"],
+    "defaultConfig": {
+      "base_url": "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+    },
+    "secretFields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "DashScope API Key",
+        "required": true
+      },
+      {
+        "key": "access_key_id",
+        "label": "Access Key ID",
+        "description": "Aliyun Access Key ID",
+        "required": false
+      },
+      {
+        "key": "access_key_secret",
+        "label": "Access Key Secret",
+        "description": "Aliyun Access Key Secret",
+        "required": false
+      }
+    ],
+    "defaultInstance": {
+      "name": "Qwen 默认实例",
+      "selectedModelId": "qwen-plus"
+    }
+  },
+  {
+    "id": "zhipu",
+    "name": "ZhiPu",
+    "provider": "zhipu",
+    "description": "ZhiPu BigModel GLM API template.",
+    "modelIds": ["glm-4"],
+    "defaultConfig": {
+      "base_url": "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+    },
+    "secretFields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "ZhiPu API Key",
+        "required": true
+      }
+    ],
+    "defaultInstance": {
+      "name": "智谱默认实例",
+      "selectedModelId": "glm-4"
+    }
+  },
+  {
+    "id": "moonshot",
+    "name": "Moonshot",
+    "provider": "moonshot",
+    "description": "Moonshot AI API template for Kimi models.",
+    "modelIds": ["moonshot-v1-32k"],
+    "defaultConfig": {
+      "base_url": "https://api.moonshot.cn/v1"
+    },
+    "secretFields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "Moonshot API Key",
+        "required": true
+      }
+    ],
+    "defaultInstance": {
+      "name": "Kimi 默认实例",
+      "selectedModelId": "moonshot-v1-32k"
+    }
+  },
+  {
+    "id": "spark",
+    "name": "Spark",
+    "provider": "spark",
+    "description": "iFLYTEK Spark WebSocket API template.",
+    "modelIds": ["spark-v3"],
+    "defaultConfig": {
+      "base_url": "wss://spark-api.xf-yun.com/v3.1/chat"
+    },
+    "secretFields": [
+      {
+        "key": "app_id",
+        "label": "App ID",
+        "description": "Spark App ID",
+        "required": true
+      },
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "Spark API Key",
+        "required": true
+      },
+      {
+        "key": "api_secret",
+        "label": "API Secret",
+        "description": "Spark API Secret",
+        "required": true
+      }
+    ],
+    "defaultInstance": {
+      "name": "Spark 默认实例",
+      "selectedModelId": "spark-v3"
+    }
+  }
+]
