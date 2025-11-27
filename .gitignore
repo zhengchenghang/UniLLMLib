@@ -5,3 +5,9 @@ dist/
 *.tgz
 .env
 
+# UniLLM密钥存储（不要提交！）
+.unillm/
+
+# 测试和临时文件
+*.tmp
+*.bak

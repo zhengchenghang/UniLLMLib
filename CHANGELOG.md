@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Linux Secure Storage Implementation** (`src/storage/linux.ts`)
+  - Dual-layer architecture: libsecret (primary) + encrypted file storage (fallback)
+  - libsecret integration with GNOME Keyring/KDE Wallet via keytar
+  - AES-256-GCM encrypted file storage as secure fallback
+  - PBKDF2 key derivation (100,000 iterations) based on machine ID + username
+  - Machine ID binding to prevent encrypted file migration
+  - File permissions (600/700) for enhanced security
+  - Automatic backend detection and switching
+  - Support for Ubuntu, Debian, CentOS, RHEL, Fedora, Arch Linux
+  - Headless server and Docker container support via encrypted file storage
+- Linux storage example in `examples/linux-storage.ts`
+- Comprehensive Linux storage test suite in `examples/test-linux-storage.ts`
+- Detailed Linux storage documentation:
+  - `docs/linux-storage.md` – technical implementation details
+  - `docs/linux-installation.md` – installation and troubleshooting guide
+  - `docs/LINUX_KEYSTORE_IMPLEMENTATION.md` – feature overview
 - iOS Keychain storage implementation using react-native-keychain
 - Secure credential storage for iOS devices with biometric authentication support
 - iOS-specific storage methods: `canImplyAuthentication()` and `getSupportedBiometryType()`
@@ -19,14 +35,29 @@ All notable changes to this project will be documented in this file.
 - `getAllSecrets()` – list all stored secrets with user scoping support
 - `clearAllSecrets()` – clear secrets with user scoping support
 - Added `examples/multi-user.ts` demonstrating multi-user usage
+- Exported storage classes and interfaces for advanced usage
 
 ### Changed
+- Updated `src/storage/factory.ts` to integrate Linux storage
+- Updated `src/storage/other-platforms.ts` to remove Linux placeholder
+- Updated `src/index.ts` to export storage-related classes and interfaces
+- Updated `.gitignore` to exclude `.unillm/` directory (secret storage location)
+- Updated `INSTALL.md` with comprehensive Linux installation instructions
+- Updated `README.md` to describe Linux secure storage support
+- Added npm scripts: `examples:linux-storage` and `test:linux-storage`
 - `setSecret()` / `getSecret()` / `deleteSecret()` now support user scoping; when a user ID is set, the ID is automatically encoded into the stored secret names
 - Updated the API documentation with the new user context section
-- Updated the README to describe multi-user functionality
 - Enhanced README with iOS/React Native installation instructions
 - Updated package.json to include react-native-keychain dependency
 - Added iOS and React Native related keywords
+
+### Security
+- Implemented AES-256-GCM authenticated encryption for Linux file storage
+- Random IV generation for each encryption operation
+- Authentication tags to prevent tampering
+- PBKDF2 key derivation with 100,000 iterations
+- Machine ID binding to prevent cross-machine decryption
+- Strict file permissions (600 for files, 700 for directories)
 
 ## [1.0.0] - 2024-10-23
 

@@ -24,22 +24,36 @@ No additional configuration is typically required.
 
 ### Linux
 
-Install `libsecret`:
+UniLLM-TS on Linux uses a dual-layer secure storage approach:
+1. **libsecret** (GNOME Keyring/KDE Wallet) - Primary method
+2. **Encrypted file storage** - Automatic fallback using AES-256-GCM
 
 #### Ubuntu / Debian
 ```bash
-sudo apt-get install libsecret-1-dev
+# Install libsecret and GNOME Keyring (recommended)
+sudo apt-get update
+sudo apt-get install -y libsecret-1-dev gnome-keyring
 ```
 
-#### Red Hat / Fedora
+#### Red Hat / CentOS / Fedora
 ```bash
-sudo yum install libsecret-devel
+# CentOS/RHEL
+sudo yum install -y libsecret-devel gnome-keyring
+
+# Fedora
+sudo dnf install -y libsecret-devel gnome-keyring
 ```
 
 #### Arch Linux
 ```bash
-sudo pacman -S libsecret
+sudo pacman -S libsecret gnome-keyring
 ```
+
+#### Headless Servers
+
+On headless servers (no desktop environment), libsecret may not be available. UniLLM-TS will automatically use encrypted file storage as a secure fallback.
+
+For detailed Linux setup and troubleshooting, see [Linux Installation Guide](docs/linux-installation.md).
 
 ## Optional: Working Without Keytar
 

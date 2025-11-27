@@ -24,28 +24,7 @@ export class MacOSStorage implements SecureStorageInterface {
   }
 }
 
-// Linux 实现（占位）
-export class LinuxStorage implements SecureStorageInterface {
-  async setSecret(key: string, value: string): Promise<void> {
-    throw new Error('LinuxStorage not implemented yet');
-  }
-
-  async getSecret(key: string): Promise<string | null> {
-    throw new Error('LinuxStorage not implemented yet');
-  }
-
-  async deleteSecret(key: string): Promise<boolean> {
-    throw new Error('LinuxStorage not implemented yet');
-  }
-
-  async getAllKeys(): Promise<string[]> {
-    throw new Error('LinuxStorage not implemented yet');
-  }
-
-  async clearAll(): Promise<void> {
-    throw new Error('LinuxStorage not implemented yet');
-  }
-}
+// Linux 实现已移至 ./linux.ts
 
 // Android 实现（基于 react-native-keychain）
 export class AndroidStorage implements SecureStorageInterface {
