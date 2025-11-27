@@ -11,3 +11,17 @@ dist/
 # 测试和临时文件
 *.tmp
 *.bak
+
+# Package build outputs
+**/dist/
+**/build/
+
+# Monorepo
+.pnpm-debug.log
+.npmrc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

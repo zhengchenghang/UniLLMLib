@@ -1,0 +1,1 @@
+{"version":3,"file":"moonshot.d.ts","sourceRoot":"","sources":["moonshot.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,WAAW,EAAE,MAAM,QAAQ,CAAC;AACrC,OAAO,EAAE,qBAAqB,EAAE,sBAAsB,EAAE,MAAM,UAAU,CAAC;AAEzE,qBAAa,gBAAiB,SAAQ,WAAW;IACzC,cAAc,CAClB,OAAO,EAAE,qBAAqB,GAC7B,OAAO,CAAC,sBAAsB,GAAG,cAAc,CAAC,MAAM,CAAC,CAAC;YAwC5C,YAAY;CAiC5B"}

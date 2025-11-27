@@ -1,0 +1,1 @@
+{"version":3,"file":"spark.d.ts","sourceRoot":"","sources":["spark.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,WAAW,EAAE,MAAM,QAAQ,CAAC;AACrC,OAAO,EAAE,qBAAqB,EAAE,sBAAsB,EAAE,MAAM,UAAU,CAAC;AAGzE,qBAAa,aAAc,SAAQ,WAAW;IACtC,cAAc,CAClB,OAAO,EAAE,qBAAqB,GAC7B,OAAO,CAAC,sBAAsB,GAAG,cAAc,CAAC,MAAM,CAAC,CAAC;IAiC3D,OAAO,CAAC,eAAe;CAgBxB"}
