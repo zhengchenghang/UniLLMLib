@@ -5,8 +5,8 @@
  * 要自定义配置，请编辑 build/config.js 文件
  */
 
-const config = require('./build/config');
-const createConfig = require('./build/create-config');
+const config = require('../../build/config');
+const createConfig = require('../../build/create-config');
 
 // 创建所有指定格式的配置
 const configs = config.OUTPUT_FORMATS.map(format => createConfig({ format }));

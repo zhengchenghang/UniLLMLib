@@ -6,15 +6,26 @@
   "workspaces": [
     "packages/*"
   ],
+  "main": "./packages/core/dist/cjs/index.js",
+  "module": "./packages/core/dist/esm/index.js",
+  "types": "./packages/core/dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./packages/core/dist/esm/index.js",
+      "require": "./packages/core/dist/cjs/index.js",
+      "types": "./packages/core/dist/types/index.d.ts"
+    },
+    "./package": "./packages/core/package.json"
+  },
   "scripts": {
-    "build": "pnpm -r --filter './packages/*' run build",
-    "build:core": "pnpm --filter @unillm-ts/core run build",
-    "build:server": "pnpm --filter @unillm-ts/server run build",
-    "clean": "pnpm -r --filter './packages/*' run clean",
-    "dev:server": "pnpm --filter @unillm-ts/server run dev",
-    "start:server": "pnpm --filter @unillm-ts/server run start",
-    "examples:core": "pnpm --filter @unillm-ts/core run examples:basic",
-    "test": "echo 'Tests coming soon...' && exit 0"
+    "build": "pnpm -r --filter \"{packages/*}\" run build",
+    "build:core": "pnpm --filter \"@unillm-ts/core\" run build",
+    "build:server": "pnpm --filter \"@unillm-ts/server\" run build",
+    "clean": "pnpm -r --filter \"{packages/*}\" run clean",
+    "dev:server": "pnpm --filter \"@unillm-ts/server\" run dev",
+    "start:server": "pnpm --filter \"@unillm-ts/server\" run start",
+    "examples:core": "pnpm --filter \"@unillm-ts/core\" run examples:basic",
+    "test": "echo \"Tests coming soon...\" && exit 0"
   },
   "keywords": [
     "llm",
@@ -30,6 +41,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "cross-env": "^10.1.0",
+    "rimraf": "^6.1.2",
     "typescript": "^5.6.3"
   },
   "engines": {

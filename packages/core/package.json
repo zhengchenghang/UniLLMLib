@@ -14,8 +14,8 @@
     "./package": "./package.json"
   },
   "scripts": {
-    "build:dev": "NODE_ENV=development rollup -c",
-    "build:pro": "NODE_ENV=production rollup -c",
+    "build:dev": "cross-env NODE_ENV=development rollup -c",
+    "build:pro": "cross-env NODE_ENV=production rollup -c",
     "build": "npm run build:pro",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
