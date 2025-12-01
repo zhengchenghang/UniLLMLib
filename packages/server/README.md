@@ -73,7 +73,9 @@ Get server information and available endpoints.
     "chat": "/api/chat",
     "chatStream": "/api/chat/stream",
     "models": "/api/models",
-    "secrets": "/api/secrets"
+    "secrets": "/api/secrets",
+    "templates": "/api/templates",
+    "instances": "/api/instances"
   }
 }
 ```
@@ -267,6 +269,246 @@ Clear all secrets.
 }
 ```
 
+### Templates
+
+#### GET /api/templates
+
+List all available configuration templates.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "templates": [
+      {
+        "id": "openai",
+        "name": "OpenAI",
+        "provider": "openai",
+        "description": "OpenAI REST API template covering GPT models.",
+        "modelIds": ["gpt-4o"],
+        "defaultConfig": {
+          "base_url": "https://api.openai.com/v1",
+          "timeout": 60000
+        },
+        "secretFields": [
+          {
+            "key": "api_key",
+            "label": "API Key",
+            "description": "OpenAI API Key",
+            "required": true
+          }
+        ],
+        "defaultInstance": {
+          "name": "OpenAI 默认实例",
+          "selectedModelId": "gpt-4o"
+        }
+      }
+    ],
+    "count": 5
+  }
+}
+```
+
+#### GET /api/templates/:templateId
+
+Get detailed information about a specific template.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "openai",
+    "name": "OpenAI",
+    "provider": "openai",
+    "description": "OpenAI REST API template covering GPT models.",
+    "modelIds": ["gpt-4o"],
+    "defaultConfig": {
+      "base_url": "https://api.openai.com/v1",
+      "timeout": 60000
+    },
+    "secretFields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "description": "OpenAI API Key",
+        "required": true
+      }
+    ]
+  }
+}
+```
+
+### Instances
+
+#### GET /api/instances
+
+List all configuration instances.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "instances": [
+      {
+        "id": "openai-default",
+        "templateId": "openai",
+        "name": "OpenAI 默认实例",
+        "config": {
+          "base_url": "https://api.openai.com/v1",
+          "timeout": 60000
+        },
+        "secretKeys": {
+          "api_key": "openai-default-api_key"
+        },
+        "selectedModelId": "gpt-4o",
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z",
+        "isDefault": true
+      }
+    ],
+    "count": 5
+  }
+}
+```
+
+#### GET /api/instances/current
+
+Get the currently selected instance.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "openai-default",
+    "templateId": "openai",
+    "name": "OpenAI 默认实例",
+    "config": {...},
+    "secretKeys": {...},
+    "selectedModelId": "gpt-4o",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### GET /api/instances/:instanceId
+
+Get details of a specific instance.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "openai-default",
+    "templateId": "openai",
+    "name": "OpenAI 默认实例",
+    "config": {...},
+    "secretKeys": {...},
+    "selectedModelId": "gpt-4o",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### POST /api/instances
+
+Create a new instance from a template.
+
+**Request Body:**
+```json
+{
+  "templateId": "openai",
+  "name": "My OpenAI Instance",
+  "config": {
+    "base_url": "https://api.openai.com/v1",
+    "timeout": 60000
+  },
+  "secrets": {
+    "api_key": "sk-..."
+  },
+  "selectedModelId": "gpt-4o"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "abc-123",
+    "templateId": "openai",
+    "name": "My OpenAI Instance",
+    "config": {...},
+    "secretKeys": {...},
+    "selectedModelId": "gpt-4o",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  "message": "Instance created successfully"
+}
+```
+
+#### PUT /api/instances/:instanceId
+
+Update an existing instance.
+
+**Request Body:**
+```json
+{
+  "name": "Updated Instance Name",
+  "config": {
+    "timeout": 90000
+  },
+  "secrets": {
+    "api_key": "sk-new-key"
+  },
+  "selectedModelId": "gpt-4o"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "abc-123",
+    "templateId": "openai",
+    "name": "Updated Instance Name",
+    "config": {...},
+    "secretKeys": {...},
+    "selectedModelId": "gpt-4o",
+    "updatedAt": "2024-01-01T01:00:00.000Z"
+  },
+  "message": "Instance updated successfully"
+}
+```
+
+#### PUT /api/instances/:instanceId/select
+
+Set an instance as the current active instance.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "abc-123",
+    "templateId": "openai",
+    "name": "My OpenAI Instance",
+    "config": {...},
+    "secretKeys": {...},
+    "selectedModelId": "gpt-4o"
+  },
+  "message": "Instance selected successfully"
+}
+```
+
 ## Error Responses
 
 All endpoints return errors in the following format:
@@ -291,6 +533,43 @@ Common HTTP status codes:
 ```bash
 # List models
 curl http://localhost:3000/api/models
+
+# List templates
+curl http://localhost:3000/api/templates
+
+# Get specific template
+curl http://localhost:3000/api/templates/openai
+
+# List instances
+curl http://localhost:3000/api/instances
+
+# Get current instance
+curl http://localhost:3000/api/instances/current
+
+# Create new instance
+curl -X POST http://localhost:3000/api/instances \
+  -H "Content-Type: application/json" \
+  -d '{
+    "templateId": "openai",
+    "name": "My OpenAI Instance",
+    "secrets": {
+      "api_key": "sk-..."
+    },
+    "selectedModelId": "gpt-4o"
+  }'
+
+# Update instance
+curl -X PUT http://localhost:3000/api/instances/openai-default \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Instance",
+    "config": {
+      "timeout": 90000
+    }
+  }'
+
+# Select instance as current
+curl -X PUT http://localhost:3000/api/instances/openai-default/select
 
 # Set API key
 curl -X POST http://localhost:3000/api/secrets \

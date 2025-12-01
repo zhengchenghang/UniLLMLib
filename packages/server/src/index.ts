@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import chatRouter from './routes/chat';
 import modelsRouter from './routes/models';
 import secretsRouter from './routes/secrets';
+import templatesRouter from './routes/templates';
+import instancesRouter from './routes/instances';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -25,7 +27,9 @@ app.get('/', (req, res) => {
       chat: '/api/chat',
       chatStream: '/api/chat/stream',
       models: '/api/models',
-      secrets: '/api/secrets'
+      secrets: '/api/secrets',
+      templates: '/api/templates',
+      instances: '/api/instances'
     }
   });
 });
@@ -33,6 +37,8 @@ app.get('/', (req, res) => {
 app.use('/api/chat', chatRouter);
 app.use('/api/models', modelsRouter);
 app.use('/api/secrets', secretsRouter);
+app.use('/api/templates', templatesRouter);
+app.use('/api/instances', instancesRouter);
 
 app.use(errorHandler);
 
