@@ -1,22 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { LLMManager } from '@unillm-ts/core';
+import { getManager, ensureInitialized } from '../lib/manager';
 
 const router: Router = Router();
-const manager = new LLMManager();
-
-let initialized = false;
-
-async function ensureInitialized() {
-  if (!initialized) {
-    await manager.init();
-    initialized = true;
-  }
-}
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const instances = manager.listInstances();
 
     res.json({
@@ -35,6 +26,7 @@ router.get('/current', async (req: Request, res: Response, next: NextFunction) =
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const currentInstance = manager.getCurrentInstance();
 
     if (!currentInstance) {
@@ -57,6 +49,7 @@ router.get('/:instanceId', async (req: Request, res: Response, next: NextFunctio
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const { instanceId } = req.params;
     const instance = manager.getInstance(instanceId);
 
@@ -80,6 +73,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const { templateId, name, config, secrets, selectedModelId } = req.body;
 
     if (!templateId) {
@@ -110,6 +104,7 @@ router.put('/:instanceId', async (req: Request, res: Response, next: NextFunctio
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const { instanceId } = req.params;
     const { name, config, secrets, selectedModelId } = req.body;
 
@@ -134,6 +129,7 @@ router.put('/:instanceId/select', async (req: Request, res: Response, next: Next
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const { instanceId } = req.params;
 
     await manager.setCurrentInstance(instanceId);

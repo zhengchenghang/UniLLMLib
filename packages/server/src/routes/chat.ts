@@ -1,17 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { LLMManager } from '@unillm-ts/core';
+import { getManager, ensureInitialized } from '../lib/manager';
 
 const router: Router = Router();
-const manager = new LLMManager();
-
-let initialized = false;
-
-async function ensureInitialized() {
-  if (!initialized) {
-    await manager.init();
-    initialized = true;
-  }
-}
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -33,6 +23,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
+    const manager = getManager();
     const response = await manager.chat(
       {
         messages,
@@ -80,6 +71,7 @@ router.post('/stream', async (req: Request, res: Response, next: NextFunction) =
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    const manager = getManager();
     const response = await manager.chat(
       {
         messages,
