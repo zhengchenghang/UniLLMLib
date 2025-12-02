@@ -21,8 +21,10 @@
     "build": "pnpm -r --filter \"{packages/*}\" run build",
     "build:core": "pnpm --filter \"@unillm-ts/core\" run build",
     "build:server": "pnpm --filter \"@unillm-ts/server\" run build",
+    "build:web": "pnpm --filter \"@unillm-ts/web\" run build",
     "clean": "pnpm -r --filter \"{packages/*}\" run clean",
     "dev:server": "pnpm --filter \"@unillm-ts/server\" run dev",
+    "dev:web": "pnpm --filter \"@unillm-ts/web\" run dev",
     "start:server": "pnpm --filter \"@unillm-ts/server\" run start",
     "examples:core": "pnpm --filter \"@unillm-ts/core\" run examples:basic",
     "test": "echo \"Tests coming soon...\" && exit 0"

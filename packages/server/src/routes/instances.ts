@@ -146,4 +146,22 @@ router.put('/:instanceId/select', async (req: Request, res: Response, next: Next
   }
 });
 
+router.delete('/:instanceId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await ensureInitialized();
+
+    const manager = getManager();
+    const { instanceId } = req.params;
+
+    await manager.deleteInstance(instanceId);
+
+    res.json({
+      success: true,
+      message: 'Instance deleted successfully'
+    });
+  } catch (error: any) {
+    next(error);
+  }
+});
+
 export default router;

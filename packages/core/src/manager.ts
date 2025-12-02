@@ -711,6 +711,44 @@ export class LLMManager {
   }
 
   /**
+   * 删除配置实例
+   */
+  async deleteInstance(instanceId: string): Promise<void> {
+    this.ensureInitialized();
+
+    const instance = this.instances.get(instanceId);
+    if (!instance) {
+      throw new Error(`Configuration instance ${instanceId} not found`);
+    }
+
+    if (instance.isDefault) {
+      throw new Error(`Cannot delete default instance ${instanceId}`);
+    }
+
+    const template = this.getTemplateOrThrow(instance.templateId);
+    for (const field of template.secretFields) {
+      const secretKey = instance.secretKeys[field.key];
+      if (secretKey) {
+        await deleteSecret(secretKey);
+      }
+    }
+
+    this.instances.delete(instanceId);
+    await this.persistInstances();
+
+    if (this.currentInstanceId === instanceId) {
+      const fallback = this.pickDefaultInstance();
+      this.currentInstanceId = fallback?.id ?? null;
+      if (fallback) {
+        this.currentModelId = this.resolveInstanceModel(fallback);
+      } else {
+        this.currentModelId = null;
+      }
+      await this.persistState();
+    }
+  }
+
+  /**
    * 设置当前实例
    */
   async setCurrentInstance(instanceId: string): Promise<void> {
