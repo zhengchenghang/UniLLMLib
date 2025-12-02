@@ -1,28 +1,75 @@
 # @unillm-ts/web
 
-Web frontend for unillm-ts.
+Web frontend for unillm-ts - A unified LLM management interface.
 
-## Status
+## Features
 
-🚧 **Coming Soon** 🚧
+- ✅ Instance Management - View, create, edit, and delete configuration instances
+- ✅ Chat Interface - Interactive chat with model selection
+- ✅ Real-time Streaming - Support for streaming responses
+- ✅ Multi-instance Support - Easy switching between different configurations
+- ✅ Modern UI - Built with Ant Design for a professional look
 
-This package is reserved for future development of a web-based user interface for unillm-ts.
+## Tech Stack
 
-## Planned Features
-
-- Interactive chat interface
-- Model selection and configuration
-- API key management
-- Multi-model comparison
-- Conversation history
-- Real-time streaming responses
-
-## Technology Stack (Planned)
-
-- React / Vue / Svelte (TBD)
+- React 18
 - TypeScript
 - Vite
-- TailwindCSS / Ant Design / Material-UI (TBD)
+- Ant Design 5
+- React Router 6
+- Axios
+
+## Development
+
+```bash
+# Install dependencies (from root)
+pnpm install
+
+# Start the development server
+pnpm dev:web
+
+# Or run from this directory
+cd packages/web
+pnpm dev
+```
+
+The web interface will be available at `http://localhost:5173`
+
+Make sure the API server is running at `http://localhost:3000`:
+
+```bash
+# In another terminal
+pnpm dev:server
+```
+
+## Build
+
+```bash
+# Build for production
+pnpm build:web
+
+# Preview the production build
+pnpm preview
+```
+
+## Features
+
+### Instance Management
+
+- View all configuration instances in a table
+- Create new instances from templates
+- Edit existing instances
+- Delete non-default instances
+- Switch between instances
+- See which instance is currently active
+
+### Chat Interface
+
+- Select active instance for chat
+- Real-time streaming responses
+- Message history
+- Clear conversation
+- Markdown support in messages
 
 ## License
 
