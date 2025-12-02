@@ -1,22 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { LLMManager } from '@unillm-ts/core';
+import { getManager, ensureInitialized } from '../lib/manager';
 
 const router: Router = Router();
-const manager = new LLMManager();
-
-let initialized = false;
-
-async function ensureInitialized() {
-  if (!initialized) {
-    await manager.init();
-    initialized = true;
-  }
-}
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const models = manager.listModels();
 
     res.json({
@@ -35,6 +26,7 @@ router.get('/:modelName', async (req: Request, res: Response, next: NextFunction
   try {
     await ensureInitialized();
 
+    const manager = getManager();
     const { modelName } = req.params;
     const allModels = manager.getModelsInfo();
     const modelInfo = allModels.find(m => m.id === modelName);
